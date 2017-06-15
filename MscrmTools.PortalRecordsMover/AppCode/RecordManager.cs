@@ -170,8 +170,6 @@ namespace MscrmTools.PortalRecordsMover.AppCode
                         worker.ReportProgress(0, progress.Clone());
                     }
                 }
-
-                return false;
             }
 
             worker.ReportProgress(0, "Updating records to add references...");
@@ -199,6 +197,8 @@ namespace MscrmTools.PortalRecordsMover.AppCode
                     worker.ReportProgress(percentage, false);
                 }
             }
+
+            return false;
         }
     }
 }
