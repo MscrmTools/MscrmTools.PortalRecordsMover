@@ -11,9 +11,9 @@ namespace MscrmTools.PortalRecordsMover.Controls
     {
         #region Variables
 
-       private readonly List<ListViewItem> items = new List<ListViewItem>();
+        private readonly List<ListViewItem> items = new List<ListViewItem>();
 
-        #endregion
+        #endregion Variables
 
         #region Constructor
 
@@ -27,9 +27,10 @@ namespace MscrmTools.PortalRecordsMover.Controls
             Service = service;
         }
 
-        #endregion
+        #endregion Constructor
 
         #region Properties
+
         public IOrganizationService Service { get; set; }
 
         public List<EntityMetadata> Metadata { get; private set; }
@@ -39,7 +40,7 @@ namespace MscrmTools.PortalRecordsMover.Controls
             get { return lvEntities.CheckedItems.Cast<ListViewItem>().Select(i => i.Tag as EntityMetadata).ToList(); }
         }
 
-        #endregion
+        #endregion Properties
 
         #region Events
 
@@ -59,17 +60,17 @@ namespace MscrmTools.PortalRecordsMover.Controls
             }
         }
 
-        #endregion
+        #endregion Events
 
         #region Methods
 
         public void LoadEntities(ExportSettings settings)
         {
             Metadata = MetadataManager.GetEntitiesList(Service);
-            
+
             foreach (var emd in Metadata.Where(m => m.IsIntersect == null || m.IsIntersect.Value == false))
             {
-                items.Add(new ListViewItem(emd.DisplayName?.UserLocalizedLabel?.Label??emd.SchemaName)
+                items.Add(new ListViewItem(emd.DisplayName?.UserLocalizedLabel?.Label ?? emd.SchemaName)
                 {
                     Tag = emd,
                     Checked = settings.SelectedEntities.Contains(emd.LogicalName)
@@ -79,6 +80,7 @@ namespace MscrmTools.PortalRecordsMover.Controls
 
         public void FillList()
         {
+            lvEntities.Items.Clear();
             lvEntities.Items.AddRange(items.ToArray());
         }
 
@@ -86,10 +88,10 @@ namespace MscrmTools.PortalRecordsMover.Controls
         {
             foreach (ListViewItem item in lvEntities.Items)
             {
-                item.Checked = entities.Contains(((EntityMetadata) item.Tag).LogicalName);
+                item.Checked = entities.Contains(((EntityMetadata)item.Tag).LogicalName);
             }
         }
 
-        #endregion
+        #endregion Methods
     }
 }
