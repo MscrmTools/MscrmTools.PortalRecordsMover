@@ -51,7 +51,7 @@ namespace MscrmTools.PortalRecordsMover.Controls
                 lvRecords.Items.Add(item);
             }
         }
-      
+
         public RecordsListerControl(List<Entity> records, List<Entity> allRecords, ManyToManyRelationshipMetadata mm, List<EntityMetadata> emds)
         {
             InitializeComponent();
@@ -61,16 +61,16 @@ namespace MscrmTools.PortalRecordsMover.Controls
                 var e1 = mm.Entity1LogicalName;
                 var id1 = record.GetAttributeValue<Guid>(mm.Entity1IntersectAttribute);
                 var emd1 = emds.First(e => e.LogicalName == e1);
-                var name1 = allRecords.First(r => r.LogicalName == e1 && r.Id == id1).GetAttributeValue<string>(emd1.PrimaryNameAttribute);
+                var name1 = allRecords.FirstOrDefault(r => r.LogicalName == e1 && r.Id == id1)?.GetAttributeValue<string>(emd1.PrimaryNameAttribute) ?? id1.ToString("B");
 
                 var e2 = mm.Entity2LogicalName;
                 var id2 = record.GetAttributeValue<Guid>(mm.Entity2IntersectAttribute);
                 var emd2 = emds.First(e => e.LogicalName == e2);
-                var name2 = allRecords.First(r => r.LogicalName == e2 && r.Id == id2).GetAttributeValue<string>(emd2.PrimaryNameAttribute);
+                var name2 = allRecords.FirstOrDefault(r => r.LogicalName == e2 && r.Id == id2)?.GetAttributeValue<string>(emd2.PrimaryNameAttribute) ?? id2.ToString("B"); ;
 
                 if (lvRecords.Columns.Count == 0)
                 {
-                    lvRecords.Columns.Add(new ColumnHeader {Text = emd1.DisplayName?.UserLocalizedLabel?.Label ?? emd1.SchemaName});
+                    lvRecords.Columns.Add(new ColumnHeader { Text = emd1.DisplayName?.UserLocalizedLabel?.Label ?? emd1.SchemaName });
 
                     lvRecords.Columns.Add(new ColumnHeader
                     {
@@ -89,7 +89,8 @@ namespace MscrmTools.PortalRecordsMover.Controls
             }
         }
 
-        public List<Entity> Records {
+        public List<Entity> Records
+        {
             get { return lvRecords.CheckedItems.Cast<ListViewItem>().Select(i => i.Tag as Entity).ToList(); }
         }
 
@@ -121,26 +122,33 @@ namespace MscrmTools.PortalRecordsMover.Controls
             {
                 case AttributeTypeCode.Boolean:
                     return record.GetAttributeValue<bool>(value).ToString();
+
                 case AttributeTypeCode.Customer:
                 case AttributeTypeCode.Lookup:
                 case AttributeTypeCode.Owner:
-                    return record.GetAttributeValue<EntityReference>(value)?.Name??string.Empty;
+                    return record.GetAttributeValue<EntityReference>(value)?.Name ?? string.Empty;
+
                 case AttributeTypeCode.DateTime:
                     return record.GetAttributeValue<DateTime>(value).ToString();
+
                 case AttributeTypeCode.Decimal:
                     return record.GetAttributeValue<decimal>(value).ToString();
+
                 case AttributeTypeCode.Double:
                     return record.GetAttributeValue<double>(value).ToString();
+
                 case AttributeTypeCode.Integer:
                     return record.GetAttributeValue<int>(value).ToString();
+
                 case AttributeTypeCode.EntityName:
                 case AttributeTypeCode.Memo:
                 case AttributeTypeCode.String:
                     return record.GetAttributeValue<string>(value);
+
                 case AttributeTypeCode.Picklist:
-                {
-                    var ov = record.GetAttributeValue<OptionSetValue>(value);
-                    if (ov == null) return string.Empty;
+                    {
+                        var ov = record.GetAttributeValue<OptionSetValue>(value);
+                        if (ov == null) return string.Empty;
                         var pamd = (PicklistAttributeMetadata)amd;
                         return pamd.OptionSet.Options.First(
                             o => o.Value.Value == ov.Value)
@@ -168,6 +176,5 @@ namespace MscrmTools.PortalRecordsMover.Controls
                     return record.Contains(value) ? record["value"].ToString() : string.Empty;
             }
         }
-
     }
 }
