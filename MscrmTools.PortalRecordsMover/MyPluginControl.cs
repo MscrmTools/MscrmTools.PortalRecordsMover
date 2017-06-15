@@ -27,6 +27,8 @@ namespace MscrmTools.PortalRecordsMover
 
         private List<EntityMetadata> emds = new List<EntityMetadata>();
 
+        private BackgroundWorker importWorker;
+
         public MyPluginControl()
         {
             InitializeComponent();
@@ -70,9 +72,6 @@ namespace MscrmTools.PortalRecordsMover
 
             tabCtrl.TabPages.Clear();
             cbbTabSelection.Items.Clear();
-
-            tabCtrl.SelectedIndexChanged += tabCtrl_SelectedIndexChanged;
-            cbbTabSelection.SelectedIndexChanged += cbbTabSelection_SelectedIndexChanged;
 
             WorkAsync(new WorkAsyncInfo
             {
@@ -133,13 +132,13 @@ namespace MscrmTools.PortalRecordsMover
 
                     var results = (ExportResults)evt.Result;
 
+                    var tabs = new List<TabPage>();
+
                     foreach (var entity in results.Entities)
                     {
                         var emd = results.Settings.AllEntities.First(ent => ent.LogicalName == entity.Records.EntityName);
                         var tabPage = new TabPage($"{emd.DisplayName?.UserLocalizedLabel?.Label ?? emd.SchemaName} ({entity.Records.Entities.Count})");
-                        tabCtrl.TabPages.Add(tabPage);
-
-                        cbbTabSelection.Items.Add(tabPage.Text);
+                        tabs.Add(tabPage);
 
                         var layoutxml = results.Views.First(
                             v => v.GetAttributeValue<string>("returnedtypecode") == emd.LogicalName)
@@ -163,9 +162,7 @@ namespace MscrmTools.PortalRecordsMover
                         var name = $"{results.Settings.AllEntities.First(ent => ent.LogicalName == rel.Entity1LogicalName).DisplayName?.UserLocalizedLabel?.Label} / {results.Settings.AllEntities.First(ent => ent.LogicalName == rel.Entity2LogicalName).DisplayName?.UserLocalizedLabel?.Label}";
 
                         var tabPage = new TabPage(name);
-                        tabCtrl.TabPages.Add(tabPage);
-
-                        cbbTabSelection.Items.Add(name);
+                        tabs.Add(tabPage);
 
                         var rl = new RecordsListerControl(entity.Records.Entities.ToList(), results.Entities.SelectMany(rs => rs.Records.Entities).ToList(), rel, results.Settings.AllEntities)
                         {
@@ -175,10 +172,16 @@ namespace MscrmTools.PortalRecordsMover
                         tabPage.Controls.Add(rl);
                     }
 
+                    tabCtrl.TabPages.AddRange(tabs.OrderBy(t => t.Text).ToArray());
+                    cbbTabSelection.Items.AddRange(tabs.OrderBy(t => t.Text).Select(t => t.Text).ToArray());
+
                     if (cbbTabSelection.Items.Count > 0)
                     {
                         cbbTabSelection.SelectedIndex = 0;
                     }
+
+                    tabCtrl.SelectedIndexChanged += tabCtrl_SelectedIndexChanged;
+                    cbbTabSelection.SelectedIndexChanged += cbbTabSelection_SelectedIndexChanged;
                 },
                 ProgressChanged = evt =>
                 {
@@ -203,6 +206,34 @@ namespace MscrmTools.PortalRecordsMover
             {
                 MessageBox.Show(this, "No record selected!", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
+            }
+
+            foreach (var record in ec.Entities)
+            {
+                var emd = settings.AllEntities.First(ent => ent.LogicalName == record.LogicalName);
+                if (!emd.IsIntersect.Value)
+                {
+                    var validAttributes = emd.Attributes
+                        .Where(a => a.IsValidForCreate.Value || a.IsValidForUpdate.Value)
+                        .Select(a => a.LogicalName)
+                        .ToArray();
+
+                    for (int i = record.Attributes.Count - 1; i >= 0; i--)
+                    {
+                        if (!validAttributes.Contains(record.Attributes.ElementAt(i).Key))
+                        {
+                            record.Attributes.Remove(record.Attributes.ElementAt(i));
+                        }
+                        else
+                        {
+                            var er = record[record.Attributes.ElementAt(i).Key] as EntityReference;
+                            if (er != null && er.LogicalName == "contact")
+                            {
+                                record.Attributes.Remove(record.Attributes.ElementAt(i));
+                            }
+                        }
+                    }
+                }
             }
 
             WorkAsync(new WorkAsyncInfo
@@ -261,7 +292,6 @@ namespace MscrmTools.PortalRecordsMover
                         MessageBox.Show(this, $"Records exported to {sfd.FileName}!", "Success", MessageBoxButtons.OK,
                             MessageBoxIcon.Information);
                     }
-
                 },
                 ProgressChanged = evt =>
                 {
@@ -320,6 +350,11 @@ namespace MscrmTools.PortalRecordsMover
             lvProgress.Items.Clear();
             pnlImportMain.Visible = false;
             llOpenLogFile.Visible = false;
+        }
+
+        private void btnCancel_Click(object sender, EventArgs e)
+        {
+            importWorker?.CancelAsync();
         }
 
         private void cbbTabSelection_SelectedIndexChanged(object sender, EventArgs e)
@@ -383,7 +418,7 @@ namespace MscrmTools.PortalRecordsMover
             }
         }
 
-        #endregion
+        #endregion Events
 
         #region Methods
 
@@ -398,7 +433,7 @@ namespace MscrmTools.PortalRecordsMover
         {
             settings.CreateFilter = docCreateFilter.IsEnabled ? docCreateFilter.SelectedDate : new DateTime?();
             settings.ModifyFilter = docModifyFilter.IsEnabled ? docCreateFilter.SelectedDate : new DateTime?();
-            settings.WebsiteFilter = wpcWebsiteFilter.SelectedWebSiteId;
+            settings.WebsiteFilter = wpcWebsiteFilter.IsEnabled ? wpcWebsiteFilter.SelectedWebSiteId : Guid.Empty;
             settings.SelectedEntities = ecpEntities.SelectedMetadatas.Select(emd => emd.LogicalName).ToList();
             settings.AllEntities = ecpEntities.Metadata;
             settings.ActiveItemsOnly = chkActiveOnly.Checked;
@@ -464,14 +499,9 @@ namespace MscrmTools.PortalRecordsMover
 
         private EntityCollection RetrieveRecords(EntityMetadata emd, ExportSettings settings)
         {
-            var validAttributes = emd.Attributes
-                .Where(a => a.IsValidForCreate.Value || a.IsValidForUpdate.Value)
-                .Select(a => a.LogicalName)
-                .ToArray();
-
             var query = new QueryExpression(emd.LogicalName)
             {
-                ColumnSet = new ColumnSet(validAttributes),
+                ColumnSet = new ColumnSet(true),
                 Criteria = new FilterExpression()
             };
 
@@ -485,7 +515,7 @@ namespace MscrmTools.PortalRecordsMover
                 query.Criteria.AddCondition("modifiedon", ConditionOperator.OnOrAfter, settings.ModifyFilter.Value.ToString("yyyy-MM-dd"));
             }
 
-            if (settings.WebsiteFilter != null && emd.Attributes.Any(a => a is LookupAttributeMetadata && ((LookupAttributeMetadata)a).Targets[0] == "adx_website"))
+            if (settings.WebsiteFilter != Guid.Empty && emd.Attributes.Any(a => a is LookupAttributeMetadata && ((LookupAttributeMetadata)a).Targets[0] == "adx_website"))
             {
                 query.Criteria.AddCondition("adx_websiteid", ConditionOperator.Equal, settings.WebsiteFilter);
             }
@@ -588,6 +618,8 @@ namespace MscrmTools.PortalRecordsMover
                 return;
             }
 
+            btnCancel.Visible = true;
+
             lblProgress.Text = "Deserializing file...";
             SendMessageToStatusBar?.Invoke(this, new StatusBarMessageEventArgs("Deserializing file..."));
 
@@ -600,7 +632,7 @@ namespace MscrmTools.PortalRecordsMover
 
             var webSitesId = ec.Entities.SelectMany(e => e.Attributes)
                 .Where(a => a.Value is EntityReference && ((EntityReference)a.Value).LogicalName == "adx_website")
-                .Select(a => ((EntityReference) a.Value).Id)
+                .Select(a => ((EntityReference)a.Value).Id)
                 .Distinct()
                 .ToList();
 
@@ -611,7 +643,7 @@ namespace MscrmTools.PortalRecordsMover
 
             if (!webSitesId.All(id => targetWebSites.Select(w => w.Id).Contains(id)))
             {
-                var wsmDialog =new WebSiteMapper(ec, targetWebSites.Select(t => new Website(t)).ToList());
+                var wsmDialog = new WebSiteMapper(ec, targetWebSites.Select(t => new Website(t)).ToList());
                 if (wsmDialog.ShowDialog() == DialogResult.Cancel)
                 {
                     return;
@@ -629,18 +661,18 @@ namespace MscrmTools.PortalRecordsMover
             };
             worker.DoWork += (s, evt) =>
             {
-                var bw = (BackgroundWorker)s;
-               
+                importWorker = (BackgroundWorker)s;
+
                 if (emds.Count == 0)
                 {
-                    bw.ReportProgress(0, "Retrieving metadata...");
+                    importWorker.ReportProgress(0, "Retrieving metadata...");
                     emds = MetadataManager.GetEntitiesList(Service);
                 }
 
-                bw.ReportProgress(0, "Processing records...");
+                importWorker.ReportProgress(0, "Processing records...");
 
                 var rm = new RecordManager(Service);
-                rm.ProcessRecords((EntityCollection)evt.Argument, emds, bw);
+                evt.Cancel = rm.ProcessRecords((EntityCollection)evt.Argument, emds, importWorker);
             };
             worker.RunWorkerCompleted += (s, evt) =>
             {
@@ -650,10 +682,11 @@ namespace MscrmTools.PortalRecordsMover
 
                 btnImportClose.Enabled = true;
                 btnImport.Enabled = true;
+                btnCancel.Visible = false;
 
                 if (evt.Cancelled)
                 {
-                    lblProgress.Text = "Canceled!";
+                    lblProgress.Text = "Import was canceled!";
                     return;
                 }
 
@@ -706,23 +739,22 @@ namespace MscrmTools.PortalRecordsMover
                                 pbImport.IsOnError = true;
                             }
 
-                            pbImport.Value = progress.Entities.Sum(ent => ent.Processed)*100/progress.Count;
+                            pbImport.Value = progress.Entities.Sum(ent => ent.Processed) * 100 / progress.Count;
                         }
                     }
                     else if (evt.UserState is bool)
                     {
-                        if ((bool) evt.UserState == false)
+                        if ((bool)evt.UserState == false)
                         {
                             pbImport.IsOnError = true;
                         }
                         pbImport.Value = evt.ProgressPercentage;
-
                     }
                 }
             };
             worker.RunWorkerAsync(ec);
         }
 
-        #endregion
+        #endregion Methods
     }
 }
