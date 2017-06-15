@@ -17,6 +17,7 @@ namespace MscrmTools.PortalRecordsMover.AppCode
     {
         private readonly IOrganizationService service;
         private readonly LogManager logger;
+        private const int maxErrorLoopCount = 5;
 
         public RecordManager(IOrganizationService service)
         {
@@ -24,24 +25,36 @@ namespace MscrmTools.PortalRecordsMover.AppCode
             logger = new LogManager(GetType());
         }
 
-        public void ProcessRecords(EntityCollection ec, List<EntityMetadata> emds, BackgroundWorker worker)
+        public bool ProcessRecords(EntityCollection ec, List<EntityMetadata> emds, BackgroundWorker worker)
         {
             var records = new List<Entity>(ec.Entities);
             var progress = new ImportProgress(records.Count);
 
             var nextCycle = new List<Entity>();
-
+            int loopIndex = 0;
             while (records.Any())
             {
+                loopIndex++;
+                if (loopIndex == maxErrorLoopCount)
+                {
+                    logger.LogWarning("Max loop count reached! Exit record first cycle processing !");
+                    break;
+                }
+
                 for (int i = records.Count - 1; i >= 0; i--)
                 {
+                    if (worker.CancellationPending)
+                    {
+                        return true;
+                    }
+
                     var record = records[i];
 
                     if (record.LogicalName != "annotation")
                     {
                         if (record.Attributes.Values.Any(v =>
                             v is EntityReference
-                            && records.Select(r => r.Id).Contains(((EntityReference) v).Id)
+                            && records.Select(r => r.Id).Contains(((EntityReference)v).Id)
                             ))
                         {
                             if (nextCycle.Any(r => r.Id == record.Id))
@@ -49,7 +62,7 @@ namespace MscrmTools.PortalRecordsMover.AppCode
                                 continue;
                             }
 
-                            var newRecord = new Entity(record.LogicalName) {Id = record.Id};
+                            var newRecord = new Entity(record.LogicalName) { Id = record.Id };
                             var toRemove = new List<string>();
                             foreach (var attr in record.Attributes)
                             {
@@ -71,7 +84,7 @@ namespace MscrmTools.PortalRecordsMover.AppCode
                             v is Guid
                             && records.Where(r => r.Id != record.Id)
                                 .Select(r => r.Id)
-                                .Contains((Guid) v)
+                                .Contains((Guid)v)
                             ))
                         {
                             continue;
@@ -135,7 +148,7 @@ namespace MscrmTools.PortalRecordsMover.AppCode
                         }
                         else
                         {
-                            var result = (UpsertResponse) service.Execute(new UpsertRequest
+                            var result = (UpsertResponse)service.Execute(new UpsertRequest
                             {
                                 Target = record
                             });
@@ -145,18 +158,20 @@ namespace MscrmTools.PortalRecordsMover.AppCode
 
                         records.RemoveAt(i);
                         entityProgress.Success++;
+                        entityProgress.Processed++;
                     }
-                    catch(Exception error)
+                    catch (Exception error)
                     {
                         logger.LogError($"{record.GetAttributeValue<string>(entityProgress.Metadata.PrimaryNameAttribute)} ({entityProgress.Entity}/{record.Id}): {error.Message}");
                         entityProgress.Error++;
                     }
                     finally
                     {
-                        entityProgress.Processed++;
                         worker.ReportProgress(0, progress.Clone());
                     }
                 }
+
+                return false;
             }
 
             worker.ReportProgress(0, "Updating records to add references...");
@@ -174,13 +189,13 @@ namespace MscrmTools.PortalRecordsMover.AppCode
 
                     record.Attributes.Remove("ownerid");
                     service.Update(record);
-                    var percentage = index*100/count;
+                    var percentage = index * 100 / count;
                     worker.ReportProgress(percentage, true);
                 }
                 catch (Exception error)
                 {
                     logger.LogInfo(error.Message);
-                    var percentage = index*100/count;
+                    var percentage = index * 100 / count;
                     worker.ReportProgress(percentage, false);
                 }
             }
