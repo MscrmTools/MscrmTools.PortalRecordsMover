@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Drawing;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.Windows.Forms;
 using System.Xml;
 using McTools.Xrm.Connection;
@@ -18,6 +16,7 @@ using MscrmTools.PortalRecordsMover.Forms;
 using XrmToolBox.Extensibility;
 using XrmToolBox.Extensibility.Args;
 using XrmToolBox.Extensibility.Interfaces;
+using Cinteros.Xrm.CRMWinForm;
 
 namespace MscrmTools.PortalRecordsMover
 {
@@ -256,12 +255,8 @@ namespace MscrmTools.PortalRecordsMover
 
                     bw.ReportProgress(0, "Exporting records...");
 
-                    MemoryStream ms = new MemoryStream();
-
-                    var serializer = new DataContractSerializer(typeof(EntityCollection), new List<Type> { typeof(Entity) });
-                    serializer.WriteObject(ms, list);
-
-                    evt.Result = ms;
+                    var serialized = EntityCollectionSerializer.Serialize(ec, SerializationStyle.Explicit);
+                    evt.Result = serialized;
                 },
                 PostWorkCallBack = evt =>
                 {
@@ -274,7 +269,7 @@ namespace MscrmTools.PortalRecordsMover
                         return;
                     }
 
-                    var ms = (MemoryStream)evt.Result;
+                    var xml = (XmlDocument)evt.Result;
 
                     var sfd = new SaveFileDialog
                     {
@@ -284,11 +279,7 @@ namespace MscrmTools.PortalRecordsMover
 
                     if (sfd.ShowDialog(this) == DialogResult.OK)
                     {
-                        using (StreamWriter fs = new StreamWriter(sfd.FileName, false))
-                        {
-                            ms.WriteTo(fs.BaseStream);
-                        }
-
+                        xml.Save(sfd.FileName);
                         MessageBox.Show(this, $"Records exported to {sfd.FileName}!", "Success", MessageBoxButtons.OK,
                             MessageBoxIcon.Information);
                     }
@@ -624,11 +615,9 @@ namespace MscrmTools.PortalRecordsMover
             SendMessageToStatusBar?.Invoke(this, new StatusBarMessageEventArgs("Deserializing file..."));
 
             EntityCollection ec;
-            using (var reader = new StreamReader(txtImportFilePath.Text))
-            {
-                var serializer = new DataContractSerializer(typeof(EntityCollection), new List<Type> { typeof(Entity) });
-                ec = (EntityCollection)serializer.ReadObject(reader.BaseStream);
-            }
+            var xml = new XmlDocument();
+            xml.Load(txtImportFilePath.Text);
+            ec = EntityCollectionSerializer.Deserialize(xml);
 
             var webSitesId = ec.Entities.SelectMany(e => e.Attributes)
                 .Where(a => a.Value is EntityReference && ((EntityReference)a.Value).LogicalName == "adx_website")
