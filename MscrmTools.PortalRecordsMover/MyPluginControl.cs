@@ -254,14 +254,7 @@ namespace MscrmTools.PortalRecordsMover
                         }
                     }
 
-                    bw.ReportProgress(0, "Exporting records...");
-
-                    MemoryStream ms = new MemoryStream();
-
-                    var serializer = new DataContractSerializer(typeof(EntityCollection), new List<Type> { typeof(Entity) });
-                    serializer.WriteObject(ms, list);
-
-                    evt.Result = ms;
+                    evt.Result = list;
                 },
                 PostWorkCallBack = evt =>
                 {
@@ -274,7 +267,7 @@ namespace MscrmTools.PortalRecordsMover
                         return;
                     }
 
-                    var ms = (MemoryStream)evt.Result;
+                    var list = (EntityCollection)evt.Result;
 
                     var sfd = new SaveFileDialog
                     {
@@ -284,9 +277,12 @@ namespace MscrmTools.PortalRecordsMover
 
                     if (sfd.ShowDialog(this) == DialogResult.OK)
                     {
-                        using (StreamWriter fs = new StreamWriter(sfd.FileName, false))
+                        var xwSettings = new XmlWriterSettings { Indent = true };
+                        var serializer = new DataContractSerializer(typeof(EntityCollection), new List<Type> { typeof(Entity) });
+
+                        using (var w = XmlWriter.Create(sfd.FileName, xwSettings))
                         {
-                            ms.WriteTo(fs.BaseStream);
+                            serializer.WriteObject(w, list);
                         }
 
                         MessageBox.Show(this, $"Records exported to {sfd.FileName}!", "Success", MessageBoxButtons.OK,
