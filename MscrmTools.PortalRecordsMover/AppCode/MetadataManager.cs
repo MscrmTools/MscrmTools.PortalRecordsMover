@@ -11,7 +11,6 @@ namespace MscrmTools.PortalRecordsMover.AppCode
     {
         public static List<EntityMetadata> GetEntitiesList(IOrganizationService service, List<string> logicalNames = null)
         {
-
             EntityQueryExpression entityQueryExpressionFull = new EntityQueryExpression
             {
                 Properties = new MetadataPropertiesExpression
@@ -34,7 +33,7 @@ namespace MscrmTools.PortalRecordsMover.AppCode
                     Properties = new MetadataPropertiesExpression
                     {
                         AllProperties = false,
-                        PropertyNames = {"IsValidForCreate", "IsValidForUpdate", "LogicalName", "Targets", "OptionSet", "DisplayName"}
+                        PropertyNames = { "IsValidForCreate", "IsValidForUpdate", "LogicalName", "Targets", "OptionSet", "DisplayName" }
                     }
                 }
             };
@@ -49,7 +48,7 @@ namespace MscrmTools.PortalRecordsMover.AppCode
                     }
                 };
             }
-            
+
             RetrieveMetadataChangesRequest request = new RetrieveMetadataChangesRequest
             {
                 Query = entityQueryExpressionFull,
@@ -58,7 +57,7 @@ namespace MscrmTools.PortalRecordsMover.AppCode
 
             var fullResponse = (RetrieveMetadataChangesResponse)service.Execute(request);
 
-            return fullResponse.EntityMetadata.Where(e => e.LogicalName.StartsWith("adx_")).ToList();
+            return fullResponse.EntityMetadata.Where(e => e.LogicalName.StartsWith("adx_") || e.LogicalName == "annotation").ToList();
         }
     }
 }
