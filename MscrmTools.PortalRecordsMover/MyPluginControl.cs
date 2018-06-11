@@ -233,6 +233,11 @@ namespace MscrmTools.PortalRecordsMover
                             }
                         }
                     }
+                    for (int i = 0; i < validAttributes.Length; i++)
+                    { //add any null attributes to force them to update to null.
+                        if (!record.Contains(validAttributes[i]))
+                            record[validAttributes[i]] = null;
+                    }
                 }
             }
 
@@ -410,7 +415,7 @@ namespace MscrmTools.PortalRecordsMover
             {
                 ComputeSettings();
                 XmlSerializerHelper.SerializeToFile(settings, sfDialog.FileName);
-                MessageBox.Show(this, $"Settings saved to {sfDialog.FileName}", "Succes", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(this, $"Settings saved to {sfDialog.FileName}", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
 
@@ -427,8 +432,8 @@ namespace MscrmTools.PortalRecordsMover
 
         private void ComputeSettings()
         {
-            settings.CreateFilter = docCreateFilter.IsEnabled ? docCreateFilter.SelectedDate : new DateTime?();
-            settings.ModifyFilter = docModifyFilter.IsEnabled ? docCreateFilter.SelectedDate : new DateTime?();
+            settings.CreateFilter = docCreateFilter.IsEnabled ? docCreateFilter.SelectedDate : (DateTime?)null;
+            settings.ModifyFilter = docModifyFilter.IsEnabled ? docCreateFilter.SelectedDate : (DateTime?)null;
             settings.WebsiteFilter = wpcWebsiteFilter.IsEnabled ? wpcWebsiteFilter.SelectedWebSiteId : Guid.Empty;
             settings.SelectedEntities = ecpEntities.SelectedMetadatas.Select(emd => emd.LogicalName).ToList();
             settings.AllEntities = ecpEntities.Metadata;
