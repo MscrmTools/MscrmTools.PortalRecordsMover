@@ -433,7 +433,7 @@ namespace MscrmTools.PortalRecordsMover
         private void ComputeSettings()
         {
             settings.CreateFilter = docCreateFilter.IsEnabled ? docCreateFilter.SelectedDate : (DateTime?)null;
-            settings.ModifyFilter = docModifyFilter.IsEnabled ? docCreateFilter.SelectedDate : (DateTime?)null;
+            settings.ModifyFilter = docModifyFilter.IsEnabled ? docModifyFilter.SelectedDate : (DateTime?)null;
             settings.WebsiteFilter = wpcWebsiteFilter.IsEnabled ? wpcWebsiteFilter.SelectedWebSiteId : Guid.Empty;
             settings.SelectedEntities = ecpEntities.SelectedMetadatas.Select(emd => emd.LogicalName).ToList();
             settings.AllEntities = ecpEntities.Metadata;
