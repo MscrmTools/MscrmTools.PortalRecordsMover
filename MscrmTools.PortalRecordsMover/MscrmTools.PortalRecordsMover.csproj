@@ -109,7 +109,9 @@
     <Compile Include="AppCode\ExportResults.cs" />
     <Compile Include="AppCode\ExportSettings.cs" />
     <Compile Include="AppCode\ImportProgress.cs" />
+    <Compile Include="AppCode\ImportSettings.cs" />
     <Compile Include="AppCode\MetadataManager.cs" />
+    <Compile Include="AppCode\PluginManager.cs" />
     <Compile Include="AppCode\RecordManager.cs" />
     <Compile Include="AppCode\Website.cs" />
     <Compile Include="Controls\CustomProgressBar.cs">
@@ -167,6 +169,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <None Include="MscrmTools.PortalRecordsMover.nuspec" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

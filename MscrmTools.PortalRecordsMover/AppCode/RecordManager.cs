@@ -1,31 +1,32 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.ServiceModel;
-using System.Windows.Forms;
-using Microsoft.Xrm.Sdk;
+﻿using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Messages;
 using Microsoft.Xrm.Sdk.Metadata;
 using Microsoft.Xrm.Sdk.Query;
 using MscrmTools.PortalRecordsMover.Forms;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using System.ServiceModel;
 using XrmToolBox.Extensibility;
 
 namespace MscrmTools.PortalRecordsMover.AppCode
 {
     internal class RecordManager
     {
-        private readonly IOrganizationService service;
-        private readonly LogManager logger;
         private const int maxErrorLoopCount = 5;
+        private readonly LogManager logger;
+        private readonly List<EntityReference> recordsToDeactivate;
+        private readonly IOrganizationService service;
 
         public RecordManager(IOrganizationService service)
         {
             this.service = service;
             logger = new LogManager(GetType());
+            recordsToDeactivate = new List<EntityReference>();
         }
 
-        public bool ProcessRecords(EntityCollection ec, List<EntityMetadata> emds, BackgroundWorker worker)
+        public bool ProcessRecords(EntityCollection ec, List<EntityMetadata> emds, int organizationMajorVersion, BackgroundWorker worker)
         {
             var records = new List<Entity>(ec.Entities);
             var progress = new ImportProgress(records.Count);
@@ -148,12 +149,52 @@ namespace MscrmTools.PortalRecordsMover.AppCode
                         }
                         else
                         {
-                            var result = (UpsertResponse)service.Execute(new UpsertRequest
+                            if (record.Attributes.Contains("statecode") &&
+                               record.GetAttributeValue<OptionSetValue>("statecode").Value == 1)
                             {
-                                Target = record
-                            });
+                                logger.LogInfo($"Record {record.GetAttributeValue<string>(entityProgress.Metadata.PrimaryNameAttribute)} is inactive : Added for deactivation step");
 
-                            logger.LogInfo($"Record {record.GetAttributeValue<string>(entityProgress.Metadata.PrimaryNameAttribute)} {(result.RecordCreated ? "created" : "updated")} ({entityProgress.Entity}/{record.Id})");
+                                recordsToDeactivate.Add(record.ToEntityReference());
+                                record.Attributes.Remove("statecode");
+                                record.Attributes.Remove("statuscode");
+                            }
+
+                            if (organizationMajorVersion >= 8)
+                            {
+                                var result = (UpsertResponse)service.Execute(new UpsertRequest
+                                {
+                                    Target = record
+                                });
+
+                                logger.LogInfo(
+                                    $"Record {record.GetAttributeValue<string>(entityProgress.Metadata.PrimaryNameAttribute)} {(result.RecordCreated ? "created" : "updated")} ({entityProgress.Entity}/{record.Id})");
+                            }
+                            else
+                            {
+                                bool exists = false;
+                                try
+                                {
+                                    service.Retrieve(record.LogicalName, record.Id, new ColumnSet());
+                                    exists = true;
+                                }
+                                catch
+                                {
+                                    // Do nothing
+                                }
+
+                                if (exists)
+                                {
+                                    service.Update(record);
+                                    logger.LogInfo(
+                                        $"Record {record.GetAttributeValue<string>(entityProgress.Metadata.PrimaryNameAttribute)} updated ({entityProgress.Entity}/{record.Id})");
+                                }
+                                else
+                                {
+                                    service.Create(record);
+                                    logger.LogInfo(
+                                        $"Record {record.GetAttributeValue<string>(entityProgress.Metadata.PrimaryNameAttribute)} created ({entityProgress.Entity}/{record.Id})");
+                                }
+                            }
                         }
 
                         records.RemoveAt(i);
@@ -195,6 +236,42 @@ namespace MscrmTools.PortalRecordsMover.AppCode
                     logger.LogInfo(error.Message);
                     var percentage = index * 100 / count;
                     worker.ReportProgress(percentage, false);
+                }
+            }
+
+            if (recordsToDeactivate.Any())
+            {
+                count = recordsToDeactivate.Count;
+                index = 0;
+
+                worker.ReportProgress(0, "Deactivating records...");
+
+                foreach (var er in recordsToDeactivate)
+                {
+                    try
+                    {
+                        index++;
+
+                        logger.LogInfo($"Deactivating record {er.LogicalName} ({er.Id})");
+
+                        var recordToUpdate = new Entity(er.LogicalName)
+                        {
+                            Id = er.Id,
+                            ["statecode"] = new OptionSetValue(1),
+                            ["statuscode"] = new OptionSetValue(-1)
+                        };
+
+                        service.Update(recordToUpdate);
+
+                        var percentage = index * 100 / count;
+                        worker.ReportProgress(percentage, true);
+                    }
+                    catch (Exception error)
+                    {
+                        logger.LogInfo(error.Message);
+                        var percentage = index * 100 / count;
+                        worker.ReportProgress(percentage, false);
+                    }
                 }
             }
 

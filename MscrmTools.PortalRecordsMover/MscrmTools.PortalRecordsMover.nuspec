@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>MscrmTools.PortalRecordsMover</id>
+    <version>1.2018.6.4</version>
+    <title>Portal Record Movers for XrmToolBox</title>
+    <authors>MscrmTools</authors>
+    <owners>MscrmTools</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <projectUrl>https://github.com/MscrmTools/MscrmTools.PortalRecordsMover</projectUrl>
+    <iconUrl>https://raw.githubusercontent.com/wiki/MscrmTools/XrmToolBox/Images/logo_0100.png</iconUrl>
+    <description>Export/Import Dynamics 365 portal records</description>
+    <summary>Export/Import Dynamics 365 portal records</summary>
+    <releaseNotes>1.2018.6.4
+Fixed inactive annotation loading
+Added capability to disable/enable WebPage plugins to ease import of webpage records
+Import inactive records as active then deactivate them
+</releaseNotes>
+    <tags>XrmToolBox Plugin PortalRecordsMover</tags>
+    <dependencies>
+      <dependency id="XrmToolBox" version="1.2016.11.4" />
+    </dependencies>
+  </metadata>
+  <files>
+  <file src="bin\release\MscrmTools.*.dll" target="lib\net462\Plugins"/>
+  </files>
+</package>
