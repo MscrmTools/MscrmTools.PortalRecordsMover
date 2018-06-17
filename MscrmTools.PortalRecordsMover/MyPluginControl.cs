@@ -530,11 +530,8 @@ namespace MscrmTools.PortalRecordsMover
             {
                 var message =
                     "You are trying to import web pages. It is recommended to deactivate plugins steps related to this entity to ensure successful import. Do you want to deactivate these plugins ? \n\nNote: The plugins will be reactivated at the end of the import process";
-                if (MessageBox.Show(this, message, @"Question", MessageBoxButtons.YesNo, MessageBoxIcon.Question) ==
-                    DialogResult.Yes)
-                {
-                    iSettings.DeactivateWebPagePlugins = true;
-                }
+                iSettings.DeactivateWebPagePlugins = MessageBox.Show(this, message, @"Question", MessageBoxButtons.YesNo, MessageBoxIcon.Question) ==
+                    DialogResult.Yes;
             }
 
             btnImport.Enabled = false;
@@ -573,7 +570,7 @@ namespace MscrmTools.PortalRecordsMover
                 {
                     importWorker.ReportProgress(0, "Reactivating Webpage plugins steps...");
 
-                    pManager.DeactivateWebpagePlugins();
+                    pManager.ActivateWebpagePlugins();
                 }
             };
             worker.RunWorkerCompleted += (s, evt) =>
