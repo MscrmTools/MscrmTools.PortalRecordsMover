@@ -1,10 +1,10 @@
-﻿using System;
+﻿using Microsoft.Xrm.Sdk;
+using Microsoft.Xrm.Sdk.Metadata;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 using System.Xml;
-using Microsoft.Xrm.Sdk;
-using Microsoft.Xrm.Sdk.Metadata;
 
 namespace MscrmTools.PortalRecordsMover.Controls
 {
@@ -17,15 +17,26 @@ namespace MscrmTools.PortalRecordsMover.Controls
             var doc = new XmlDocument();
             doc.LoadXml(layoutXml);
 
-            foreach (XmlNode node in doc.SelectNodes("grid/row/cell"))
+            if (emd.LogicalName == "annotation")
             {
-                lvRecords.Columns.Add(new ColumnHeader
+                lvRecords.Columns.AddRange(new[]
                 {
-                    Text = emd.Attributes
-                        .FirstOrDefault(a => a.LogicalName == node.Attributes["name"].Value)?
-                        .DisplayName?.UserLocalizedLabel?.Label ?? node.Attributes["name"].Value,
-                    Width = int.Parse(node.Attributes["width"].Value)
+                    new ColumnHeader{Text = @"File name", Width = 300},
+                    new ColumnHeader{Text = @"File size", Width=150}
                 });
+            }
+            else
+            {
+                foreach (XmlNode node in doc.SelectNodes("grid/row/cell"))
+                {
+                    lvRecords.Columns.Add(new ColumnHeader
+                    {
+                        Text = emd.Attributes
+                                   .FirstOrDefault(a => a.LogicalName == node.Attributes["name"].Value)?
+                                   .DisplayName?.UserLocalizedLabel?.Label ?? node.Attributes["name"].Value,
+                        Width = int.Parse(node.Attributes["width"].Value)
+                    });
+                }
             }
 
             foreach (var record in records)
@@ -36,15 +47,23 @@ namespace MscrmTools.PortalRecordsMover.Controls
                     Checked = true
                 };
 
-                foreach (XmlNode node in doc.SelectNodes("grid/row/cell"))
+                if (record.LogicalName == "annotation")
                 {
-                    if (node == node.ParentNode.FirstChild)
+                    item.Text = GetRecordValue(record, "filename", emd);
+                    item.SubItems.Add(GetRecordValue(record, "filesize", emd));
+                }
+                else
+                {
+                    foreach (XmlNode node in doc.SelectNodes("grid/row/cell"))
                     {
-                        item.Text = GetRecordValue(record, node.Attributes["name"].Value, emd);
-                    }
-                    else
-                    {
-                        item.SubItems.Add(GetRecordValue(record, node.Attributes["name"].Value, emd));
+                        if (node == node.ParentNode.FirstChild)
+                        {
+                            item.Text = GetRecordValue(record, node.Attributes["name"].Value, emd);
+                        }
+                        else
+                        {
+                            item.SubItems.Add(GetRecordValue(record, node.Attributes["name"].Value, emd));
+                        }
                     }
                 }
 
@@ -92,22 +111,6 @@ namespace MscrmTools.PortalRecordsMover.Controls
         public List<Entity> Records
         {
             get { return lvRecords.CheckedItems.Cast<ListViewItem>().Select(i => i.Tag as Entity).ToList(); }
-        }
-
-        private void llClear_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
-        {
-            foreach (ListViewItem item in lvRecords.Items)
-            {
-                item.Checked = false;
-            }
-        }
-
-        private void llSelectAll_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
-        {
-            foreach (ListViewItem item in lvRecords.Items)
-            {
-                item.Checked = true;
-            }
         }
 
         private string GetRecordValue(Entity record, string value, EntityMetadata emd)
@@ -174,6 +177,22 @@ namespace MscrmTools.PortalRecordsMover.Controls
                     }
                 default:
                     return record.Contains(value) ? record["value"].ToString() : string.Empty;
+            }
+        }
+
+        private void llClear_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            foreach (ListViewItem item in lvRecords.Items)
+            {
+                item.Checked = false;
+            }
+        }
+
+        private void llSelectAll_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            foreach (ListViewItem item in lvRecords.Items)
+            {
+                item.Checked = true;
             }
         }
     }
