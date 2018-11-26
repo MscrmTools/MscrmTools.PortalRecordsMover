@@ -425,6 +425,7 @@ namespace MscrmTools.PortalRecordsMover
 
         public void LoadItems()
         {
+            ComputeSettings();
             WorkAsync(new WorkAsyncInfo
             {
                 Message = "Loading entities...",

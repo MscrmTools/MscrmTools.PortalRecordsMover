@@ -67,7 +67,7 @@ namespace MscrmTools.PortalRecordsMover.Controls
         public void LoadEntities(ExportSettings settings)
         {
             Metadata = MetadataManager.GetEntitiesList(Service);
-
+            items.Clear();
             foreach (var emd in Metadata.Where(m => m.IsIntersect == null || m.IsIntersect.Value == false))
             {
                 items.Add(new ListViewItem(emd.DisplayName?.UserLocalizedLabel?.Label ?? emd.SchemaName)
