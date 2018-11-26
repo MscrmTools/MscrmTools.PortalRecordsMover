@@ -732,10 +732,10 @@ namespace MscrmTools.PortalRecordsMover
             {
                 query.Criteria.AddCondition("modifiedon", ConditionOperator.OnOrAfter, settings.ModifyFilter.Value.ToString("yyyy-MM-dd"));
             }
-
-            if (settings.WebsiteFilter != Guid.Empty && emd.Attributes.Any(a => a is LookupAttributeMetadata && ((LookupAttributeMetadata)a).Targets[0] == "adx_website"))
+            var adxwebsite_attrname = "adx_websiteid";
+            if (settings.WebsiteFilter != Guid.Empty && (emd.LogicalName == "adx_website" || emd.Attributes.Any(a => a is LookupAttributeMetadata && ((LookupAttributeMetadata)a).Targets[0] == "adx_website" && !String.IsNullOrEmpty(adxwebsite_attrname = a.LogicalName))))
             {
-                query.Criteria.AddCondition("adx_websiteid", ConditionOperator.Equal, settings.WebsiteFilter);
+                query.Criteria.AddCondition(adxwebsite_attrname, ConditionOperator.Equal, settings.WebsiteFilter);
             }
 
             if (settings.ActiveItemsOnly && emd.LogicalName != "annotation")
