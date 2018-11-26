@@ -767,6 +767,8 @@ namespace MscrmTools.PortalRecordsMover
 
         private List<Entity> RetrieveWebfileAnnotations(List<Guid> ids)
         {
+            var emd = settings.AllEntities.First(ent => ent.LogicalName == "adx_webfile");
+
             return Service.RetrieveMultiple(new QueryExpression("annotation")
             {
                 ColumnSet = new ColumnSet(true),
@@ -774,12 +776,20 @@ namespace MscrmTools.PortalRecordsMover
                 {
                     Conditions =
                     {
-                        new ConditionExpression("objectid", ConditionOperator.In, ids.ToArray())
+                        new ConditionExpression("objectidtypecode", ConditionOperator.Equal, emd.ObjectTypeCode)
                     }
                 }
-            }).Entities.ToList();
+            }).Entities.Where(e => ids.Contains(e.GetAttributeValue<EntityReference>("objectid").Id))
+            .Select(a =>
+            {
+                var e = new Entity(a.LogicalName, a.Id);
+                e.Attributes = a.Attributes;
+                return e;
+            })
+            .ToList();
         }
 
         #endregion Methods
     }
+
 }

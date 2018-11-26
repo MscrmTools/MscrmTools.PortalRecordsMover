@@ -25,7 +25,8 @@ namespace MscrmTools.PortalRecordsMover.AppCode
                         "ManyToOneRelationships",
                         "IsIntersect",
                         "PrimaryNameAttribute",
-                        "Attributes"
+                        "Attributes",
+                        "ObjectTypeCode"
                     }
                 },
                 AttributeQuery = new AttributeQueryExpression

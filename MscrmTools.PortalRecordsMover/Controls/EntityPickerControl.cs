@@ -68,7 +68,7 @@ namespace MscrmTools.PortalRecordsMover.Controls
         {
             Metadata = MetadataManager.GetEntitiesList(Service);
             items.Clear();
-            foreach (var emd in Metadata.Where(m => m.IsIntersect == null || m.IsIntersect.Value == false))
+            foreach (var emd in Metadata.Where(m => m.LogicalName != "annotation" && (m.IsIntersect == null || m.IsIntersect.Value == false)))
             {
                 items.Add(new ListViewItem(emd.DisplayName?.UserLocalizedLabel?.Label ?? emd.SchemaName)
                 {
