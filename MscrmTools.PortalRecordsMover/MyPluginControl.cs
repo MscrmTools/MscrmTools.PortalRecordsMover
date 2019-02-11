@@ -537,6 +537,7 @@ namespace MscrmTools.PortalRecordsMover
             btnImport.Enabled = false;
             pnlImportMain.Visible = true;
             pbImport.IsOnError = false;
+            lvProgress.Items.Clear();
 
             var worker = new BackgroundWorker
             {
