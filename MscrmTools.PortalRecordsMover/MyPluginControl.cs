@@ -42,6 +42,9 @@ namespace MscrmTools.PortalRecordsMover
             iSettings = new ImportSettings();
 
             logger = new LogManager(GetType());
+
+            docCreateFilter.SelectedDate = DateTime.Now;
+            docModifyFilter.SelectedDate = DateTime.Now;
         }
 
         public event EventHandler<StatusBarMessageEventArgs> SendMessageToStatusBar;
