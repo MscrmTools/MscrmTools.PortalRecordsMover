@@ -12,6 +12,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Threading;
 using System.Windows.Forms;
 using System.Xml;
 using XrmToolBox.Extensibility;
@@ -23,8 +24,10 @@ namespace MscrmTools.PortalRecordsMover
     public partial class MyPluginControl : PluginControlBase, IGitHubPlugin, IHelpPlugin, IStatusBarMessenger
     {
         private readonly ImportSettings iSettings;
+        private readonly LogManager logger;
         private List<EntityMetadata> emds = new List<EntityMetadata>();
         private BackgroundWorker importWorker;
+        private NoteManager nManager;
         private PluginManager pManager;
         private ExportSettings settings;
 
@@ -37,6 +40,8 @@ namespace MscrmTools.PortalRecordsMover
 
             settings = new ExportSettings();
             iSettings = new ImportSettings();
+
+            logger = new LogManager(GetType());
         }
 
         public event EventHandler<StatusBarMessageEventArgs> SendMessageToStatusBar;
@@ -467,6 +472,8 @@ namespace MscrmTools.PortalRecordsMover
         {
             ecpEntities.Service = newService;
 
+            nManager = new NoteManager(newService);
+
             base.UpdateConnection(newService, detail, actionName, parameter);
         }
 
@@ -507,7 +514,7 @@ namespace MscrmTools.PortalRecordsMover
             }
 
             var webSitesId = ec.Entities.SelectMany(e => e.Attributes)
-                .Where(a => a.Value is EntityReference && ((EntityReference)a.Value).LogicalName == "adx_website")
+                .Where(a => a.Value is EntityReference reference && reference.LogicalName == "adx_website")
                 .Select(a => ((EntityReference)a.Value).Id)
                 .Distinct()
                 .ToList();
@@ -534,6 +541,14 @@ namespace MscrmTools.PortalRecordsMover
                     DialogResult.Yes;
             }
 
+            if (ec.Entities.Any(e => e.LogicalName == "annotation" && e.GetAttributeValue<string>("filename").ToLower().EndsWith(".js")) && nManager.HasJsRestriction)
+            {
+                var message =
+                    "You are trying to import JavaScript note. It is recommended to remove JavaScript file type restriction to ensure successful import. Do you want to remove this restriction ? \n\nNote: The restriction will be added back at the end of the import process";
+                iSettings.RemoveJavaScriptFileRestriction = MessageBox.Show(this, message, @"Question", MessageBoxButtons.YesNo, MessageBoxIcon.Question) ==
+                                                     DialogResult.Yes;
+            }
+
             btnImport.Enabled = false;
             pnlImportMain.Visible = true;
             pbImport.IsOnError = false;
@@ -557,9 +572,25 @@ namespace MscrmTools.PortalRecordsMover
                 if (iSettings.DeactivateWebPagePlugins)
                 {
                     importWorker.ReportProgress(0, "Deactivating Webpage plugins steps...");
+                    logger.LogInfo("Deactivating Webpage plugins steps");
 
                     pManager = new PluginManager(Service);
                     pManager.DeactivateWebpagePlugins();
+
+                    logger.LogInfo("Webpage plugins steps deactivated");
+                }
+
+                if (iSettings.RemoveJavaScriptFileRestriction && nManager.HasJsRestriction)
+                {
+                    logger.LogInfo("Removing JavaScript file restriction");
+
+                    importWorker.ReportProgress(0, "Removing JavaScript file restriction...");
+                    nManager.RemoveRestriction();
+
+                    // Wait 2 seconds to be sure the settings is updated
+                    Thread.Sleep(2000);
+
+                    logger.LogInfo("JavaScript file restriction removed");
                 }
 
                 importWorker.ReportProgress(0, "Processing records...");
@@ -570,8 +601,21 @@ namespace MscrmTools.PortalRecordsMover
                 if (iSettings.DeactivateWebPagePlugins)
                 {
                     importWorker.ReportProgress(0, "Reactivating Webpage plugins steps...");
+                    logger.LogInfo("Reactivating Webpage plugins steps");
 
                     pManager.ActivateWebpagePlugins();
+
+                    logger.LogInfo("Webpage plugins steps activated");
+                }
+
+                if (iSettings.RemoveJavaScriptFileRestriction && nManager.HasJsRestriction)
+                {
+                    logger.LogInfo("Adding back JavaScript file restriction");
+
+                    importWorker.ReportProgress(0, "Adding back JavaScript file restriction...");
+                    nManager.AddRestriction();
+
+                    logger.LogInfo("JavaScript file restriction added back");
                 }
             };
             worker.RunWorkerCompleted += (s, evt) =>

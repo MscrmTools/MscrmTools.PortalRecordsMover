@@ -54,8 +54,8 @@ namespace MscrmTools.PortalRecordsMover.AppCode
                     if (record.LogicalName != "annotation")
                     {
                         if (record.Attributes.Values.Any(v =>
-                            v is EntityReference
-                            && records.Select(r => r.Id).Contains(((EntityReference)v).Id)
+                            v is EntityReference reference
+                            && records.Select(r => r.Id).Contains(reference.Id)
                             ))
                         {
                             if (nextCycle.Any(r => r.Id == record.Id))
@@ -82,10 +82,10 @@ namespace MscrmTools.PortalRecordsMover.AppCode
                         }
 
                         if (record.Attributes.Values.Any(v =>
-                            v is Guid
+                            v is Guid guid
                             && records.Where(r => r.Id != record.Id)
                                 .Select(r => r.Id)
-                                .Contains((Guid)v)
+                                .Contains(guid)
                             ))
                         {
                             continue;

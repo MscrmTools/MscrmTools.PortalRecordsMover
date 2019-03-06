@@ -123,6 +123,7 @@
     <Compile Include="AppCode\ImportProgress.cs" />
     <Compile Include="AppCode\ImportSettings.cs" />
     <Compile Include="AppCode\MetadataManager.cs" />
+    <Compile Include="AppCode\NoteManager.cs" />
     <Compile Include="AppCode\PluginManager.cs" />
     <Compile Include="AppCode\RecordManager.cs" />
     <Compile Include="AppCode\Website.cs" />
@@ -212,6 +213,12 @@
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>if $(ConfigurationName) == Debug (
+  IF NOT EXIST Plugins mkdir Plugins
+  move /Y $(TargetFileName) Plugins
+)</PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
