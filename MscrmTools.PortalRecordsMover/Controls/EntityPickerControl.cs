@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Windows.Forms;
-using Microsoft.Xrm.Sdk;
+﻿using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Metadata;
 using MscrmTools.PortalRecordsMover.AppCode;
+using System.Collections.Generic;
+using System.Linq;
+using System.Windows.Forms;
 
 namespace MscrmTools.PortalRecordsMover.Controls
 {
@@ -31,14 +31,14 @@ namespace MscrmTools.PortalRecordsMover.Controls
 
         #region Properties
 
-        public IOrganizationService Service { get; set; }
-
         public List<EntityMetadata> Metadata { get; private set; }
 
         public List<EntityMetadata> SelectedMetadatas
         {
             get { return lvEntities.CheckedItems.Cast<ListViewItem>().Select(i => i.Tag as EntityMetadata).ToList(); }
         }
+
+        public IOrganizationService Service { get; set; }
 
         #endregion Properties
 
@@ -64,24 +64,27 @@ namespace MscrmTools.PortalRecordsMover.Controls
 
         #region Methods
 
+        public void FillList()
+        {
+            lvEntities.Items.Clear();
+            lvEntities.Items.AddRange(items.ToArray());
+        }
+
         public void LoadEntities(ExportSettings settings)
         {
             Metadata = MetadataManager.GetEntitiesList(Service);
 
             foreach (var emd in Metadata.Where(m => m.IsIntersect == null || m.IsIntersect.Value == false))
             {
+                if (emd.LogicalName == "annotation")
+                    continue;
+
                 items.Add(new ListViewItem(emd.DisplayName?.UserLocalizedLabel?.Label ?? emd.SchemaName)
                 {
                     Tag = emd,
                     Checked = settings.SelectedEntities.Contains(emd.LogicalName)
                 });
             }
-        }
-
-        public void FillList()
-        {
-            lvEntities.Items.Clear();
-            lvEntities.Items.AddRange(items.ToArray());
         }
 
         public void SelectItems(List<string> entities)
