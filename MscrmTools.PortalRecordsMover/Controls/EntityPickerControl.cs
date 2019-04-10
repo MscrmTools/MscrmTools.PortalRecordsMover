@@ -74,6 +74,8 @@ namespace MscrmTools.PortalRecordsMover.Controls
         {
             Metadata = MetadataManager.GetEntitiesList(Service);
 
+            items.Clear();
+
             foreach (var emd in Metadata.Where(m => m.IsIntersect == null || m.IsIntersect.Value == false))
             {
                 if (emd.LogicalName == "annotation")
