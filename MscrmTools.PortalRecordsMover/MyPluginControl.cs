@@ -516,23 +516,34 @@ namespace MscrmTools.PortalRecordsMover
                 ec = (EntityCollection)serializer.ReadObject(reader.BaseStream);
             }
 
-            var webSitesId = ec.Entities.SelectMany(e => e.Attributes)
+            // References to websites
+            var webSitesRefId = ec.Entities.SelectMany(e => e.Attributes)
                 .Where(a => a.Value is EntityReference reference && reference.LogicalName == "adx_website")
                 .Select(a => ((EntityReference)a.Value).Id)
                 .Distinct()
                 .ToList();
 
-            var targetWebSites = Service.RetrieveMultiple(new QueryExpression("adx_website")
-            {
-                ColumnSet = new ColumnSet("adx_name")
-            }).Entities;
+            // Websites included in records to process
+            var webSitesIds = ec.Entities.Where(e => e.LogicalName == "adx_website")
+                .Select(e => e.Id)
+                .ToList();
 
-            if (!webSitesId.All(id => targetWebSites.Select(w => w.Id).Contains(id)))
+            // If some references are not found in websites included in records
+            // to process, ask the user to map to the appropriate website
+            if (!webSitesRefId.All(id => webSitesIds.Contains(id)))
             {
-                var wsmDialog = new WebSiteMapper(ec, targetWebSites.Select(t => new Website(t)).ToList());
-                if (wsmDialog.ShowDialog() == DialogResult.Cancel)
+                var targetWebSites = Service.RetrieveMultiple(new QueryExpression("adx_website")
                 {
-                    return;
+                    ColumnSet = new ColumnSet("adx_name")
+                }).Entities;
+
+                if (!webSitesRefId.All(id => targetWebSites.Select(w => w.Id).Contains(id)))
+                {
+                    var wsmDialog = new WebSiteMapper(ec, targetWebSites.Select(t => new Website(t)).ToList());
+                    if (wsmDialog.ShowDialog() == DialogResult.Cancel)
+                    {
+                        return;
+                    }
                 }
             }
 
