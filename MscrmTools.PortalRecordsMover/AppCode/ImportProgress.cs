@@ -1,9 +1,46 @@
-﻿using System;
+﻿using Microsoft.Xrm.Sdk.Metadata;
+using System;
 using System.Collections.Generic;
-using Microsoft.Xrm.Sdk.Metadata;
 
 namespace MscrmTools.PortalRecordsMover.AppCode
 {
+    internal class EntityProgress : ICloneable
+    {
+        public EntityProgress(EntityMetadata emd, string displayName)
+        {
+            LogicalName = emd.LogicalName;
+            Entity = displayName;
+            Metadata = emd;
+        }
+
+        public int Count { get; set; }
+        public string Entity { get; }
+        public int ErrorFirstPhase { get; set; }
+        public int? ErrorSecondPhase { get; set; }
+        public int? ErrorSetState { get; set; }
+        public string LogicalName { get; }
+        public EntityMetadata Metadata { get; }
+        public int Processed { get; set; }
+        public int SuccessFirstPhase { get; set; }
+        public int? SuccessSecondPhase { get; set; }
+        public int? SuccessSetStatePhase { get; set; }
+
+        public object Clone()
+        {
+            return new EntityProgress(Metadata, Entity)
+            {
+                ErrorFirstPhase = ErrorFirstPhase,
+                ErrorSecondPhase = ErrorSecondPhase,
+                ErrorSetState = ErrorSetState,
+                SuccessFirstPhase = SuccessFirstPhase,
+                SuccessSecondPhase = SuccessSecondPhase,
+                SuccessSetStatePhase = SuccessSetStatePhase,
+                Processed = Processed,
+                Count = Count
+            };
+        }
+    }
+
     internal class ImportProgress : ICloneable
     {
         public ImportProgress(int count)
@@ -12,8 +49,8 @@ namespace MscrmTools.PortalRecordsMover.AppCode
             Count = count;
         }
 
-        public List<EntityProgress> Entities { get; }
         public int Count { get; }
+        public List<EntityProgress> Entities { get; }
 
         public object Clone()
         {
@@ -24,33 +61,6 @@ namespace MscrmTools.PortalRecordsMover.AppCode
             }
 
             return clone;
-        }
-    }
-
-    internal class EntityProgress : ICloneable
-    {
-        public EntityProgress(EntityMetadata emd, string displayName)
-        {
-            LogicalName = emd.LogicalName;
-            Entity = displayName;
-            Metadata = emd;
-        }
-
-        public EntityMetadata Metadata { get; }
-        public string LogicalName { get; }
-        public string Entity { get; }
-        public int Processed { get; set; }
-        public int Success { get; set; }
-        public int Error { get; set; }
-
-        public object Clone()
-        {
-            return new EntityProgress(Metadata, Entity)
-            {
-                Error = Error,
-                Success = Success,
-                Processed = Processed
-            };
         }
     }
 }

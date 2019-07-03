@@ -678,35 +678,53 @@ namespace MscrmTools.PortalRecordsMover
                     {
                         foreach (var ep in progress.Entities)
                         {
-                            var item = lvProgress.Items.Cast<ListViewItem>().FirstOrDefault(i => i.Text == ep.Entity);
+                            var item = lvProgress.Items.Cast<ListViewItem>().FirstOrDefault(i => i.Tag.ToString() == ep.LogicalName);
                             if (item == null)
                             {
-                                item = new ListViewItem(ep.Entity);
-                                item.SubItems.Add(ep.Success.ToString());
-                                item.SubItems.Add(ep.Error.ToString());
+                                item = new ListViewItem($"{ep.Entity} ({ep.Count})") { Tag = ep.LogicalName };
+                                item.SubItems.Add(ep.SuccessFirstPhase.ToString());
+                                item.SubItems.Add(ep.ErrorFirstPhase.ToString());
+                                item.SubItems.AddRange(new[] { "", "", "", "" });
+
+                                if (ep.SuccessSecondPhase.HasValue || ep.ErrorSecondPhase.HasValue)
+                                {
+                                    item.SubItems[3].Text = (ep.SuccessSecondPhase ?? 0).ToString();
+                                    item.SubItems[4].Text = (ep.ErrorSecondPhase ?? 0).ToString();
+                                }
+
+                                if (ep.SuccessSetStatePhase.HasValue || ep.ErrorSetState.HasValue)
+                                {
+                                    item.SubItems[5].Text = (ep.SuccessSetStatePhase ?? 0).ToString();
+                                    item.SubItems[6].Text = (ep.ErrorSetState ?? 0).ToString();
+                                }
+
                                 lvProgress.Items.Add(item);
                             }
                             else
                             {
-                                item.SubItems[1].Text = ep.Success.ToString();
-                                item.SubItems[2].Text = ep.Error.ToString();
+                                item.SubItems[1].Text = ep.SuccessFirstPhase.ToString();
+                                item.SubItems[2].Text = ep.ErrorFirstPhase.ToString();
+
+                                if (ep.SuccessSecondPhase.HasValue || ep.ErrorSecondPhase.HasValue)
+                                {
+                                    item.SubItems[3].Text = (ep.SuccessSecondPhase ?? 0).ToString();
+                                    item.SubItems[4].Text = (ep.ErrorSecondPhase ?? 0).ToString();
+                                }
+
+                                if (ep.SuccessSetStatePhase.HasValue || ep.ErrorSetState.HasValue)
+                                {
+                                    item.SubItems[5].Text = (ep.SuccessSetStatePhase ?? 0).ToString();
+                                    item.SubItems[6].Text = (ep.ErrorSetState ?? 0).ToString();
+                                }
                             }
 
-                            if (ep.Error > 0)
+                            if (ep.ErrorFirstPhase > 0 || ep.ErrorSecondPhase > 0 || ep.ErrorSetState > 0)
                             {
                                 pbImport.IsOnError = true;
                             }
 
                             pbImport.Value = progress.Entities.Sum(ent => ent.Processed) * 100 / progress.Count;
                         }
-                    }
-                    else if (evt.UserState is bool)
-                    {
-                        if ((bool)evt.UserState == false)
-                        {
-                            pbImport.IsOnError = true;
-                        }
-                        pbImport.Value = evt.ProgressPercentage;
                     }
                 }
             };

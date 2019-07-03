@@ -110,7 +110,10 @@ namespace MscrmTools.PortalRecordsMover.AppCode
                             displayName = emd.SchemaName;
                         }
 
-                        entityProgress = new EntityProgress(emd, displayName);
+                        entityProgress = new EntityProgress(emd, displayName)
+                        {
+                            Count = records.Count(r => r.LogicalName == record.LogicalName)
+                        };
                         progress.Entities.Add(entityProgress);
                     }
 
@@ -198,13 +201,13 @@ namespace MscrmTools.PortalRecordsMover.AppCode
                         }
 
                         records.RemoveAt(i);
-                        entityProgress.Success++;
+                        entityProgress.SuccessFirstPhase++;
                         entityProgress.Processed++;
                     }
                     catch (Exception error)
                     {
                         logger.LogError($"{record.GetAttributeValue<string>(entityProgress.Metadata.PrimaryNameAttribute)} ({entityProgress.Entity}/{record.Id}): {error.Message}");
-                        entityProgress.Error++;
+                        entityProgress.ErrorFirstPhase++;
                     }
                     finally
                     {
@@ -220,6 +223,13 @@ namespace MscrmTools.PortalRecordsMover.AppCode
 
             foreach (var record in nextCycle.DistinctBy(r => r.Id))
             {
+                var entityProgress = progress.Entities.First(e => e.LogicalName == record.LogicalName);
+                if (!entityProgress.SuccessSecondPhase.HasValue)
+                {
+                    entityProgress.SuccessSecondPhase = 0;
+                    entityProgress.ErrorSecondPhase = 0;
+                }
+
                 try
                 {
                     index++;
@@ -228,14 +238,20 @@ namespace MscrmTools.PortalRecordsMover.AppCode
 
                     record.Attributes.Remove("ownerid");
                     service.Update(record);
+
                     var percentage = index * 100 / count;
-                    worker.ReportProgress(percentage, true);
+
+                    entityProgress.SuccessSecondPhase = entityProgress.SuccessSecondPhase.Value + 1;
+
+                    worker.ReportProgress(percentage, progress.Clone());
                 }
                 catch (Exception error)
                 {
                     logger.LogInfo(error.Message);
                     var percentage = index * 100 / count;
-                    worker.ReportProgress(percentage, false);
+                    entityProgress.ErrorSecondPhase = entityProgress.ErrorSecondPhase.Value + 1;
+
+                    worker.ReportProgress(percentage, progress.Clone());
                 }
             }
 
@@ -248,6 +264,13 @@ namespace MscrmTools.PortalRecordsMover.AppCode
 
                 foreach (var er in recordsToDeactivate)
                 {
+                    var entityProgress = progress.Entities.First(e => e.LogicalName == er.LogicalName);
+                    if (!entityProgress.SuccessSecondPhase.HasValue)
+                    {
+                        entityProgress.SuccessSetStatePhase = 0;
+                        entityProgress.ErrorSetState = 0;
+                    }
+
                     try
                     {
                         index++;
@@ -264,13 +287,15 @@ namespace MscrmTools.PortalRecordsMover.AppCode
                         service.Update(recordToUpdate);
 
                         var percentage = index * 100 / count;
-                        worker.ReportProgress(percentage, true);
+                        entityProgress.SuccessSetStatePhase++;
+                        worker.ReportProgress(percentage, progress.Clone());
                     }
                     catch (Exception error)
                     {
                         logger.LogInfo(error.Message);
                         var percentage = index * 100 / count;
-                        worker.ReportProgress(percentage, false);
+                        entityProgress.ErrorSetState++;
+                        worker.ReportProgress(percentage, progress.Clone());
                     }
                 }
             }
