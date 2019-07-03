@@ -555,7 +555,7 @@ namespace MscrmTools.PortalRecordsMover
                     DialogResult.Yes;
             }
 
-            if (ec.Entities.Any(e => e.LogicalName == "annotation" && e.GetAttributeValue<string>("filename").ToLower().EndsWith(".js")) && nManager.HasJsRestriction)
+            if (ec.Entities.Any(e => e.LogicalName == "annotation" && (e.GetAttributeValue<string>("filename")?.ToLower().EndsWith(".js") ?? false)) && nManager.HasJsRestriction)
             {
                 var message =
                     "You are trying to import JavaScript note. It is recommended to remove JavaScript file type restriction to ensure successful import. Do you want to remove this restriction ? \n\nNote: The restriction will be added back at the end of the import process";
