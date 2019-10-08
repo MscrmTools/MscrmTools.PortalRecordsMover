@@ -563,6 +563,14 @@ namespace MscrmTools.PortalRecordsMover
                                                      DialogResult.Yes;
             }
 
+            if (ec.Entities.Any(e =>
+                e.LogicalName == "annotation" &&
+                e.GetAttributeValue<EntityReference>("objectid")?.LogicalName == "adx_webfile"))
+            {
+                var message = "You are trying to import notes for web files. Do you want to clean target web files (ie. keep only annotation from source data and delete any other annotation from the web files referenced in source data?";
+                iSettings.CleanWebFiles = MessageBox.Show(this, message, @"Question", MessageBoxButtons.YesNo) == DialogResult.Yes;
+            }
+
             btnImport.Enabled = false;
             pnlImportMain.Visible = true;
             pbImport.IsOnError = false;
@@ -610,7 +618,7 @@ namespace MscrmTools.PortalRecordsMover
                 importWorker.ReportProgress(0, "Processing records...");
 
                 var rm = new RecordManager(Service);
-                evt.Cancel = rm.ProcessRecords((EntityCollection)evt.Argument, emds, ConnectionDetail.OrganizationMajorVersion, importWorker);
+                evt.Cancel = rm.ProcessRecords((EntityCollection)evt.Argument, emds, ConnectionDetail.OrganizationMajorVersion, importWorker, iSettings);
 
                 if (iSettings.DeactivateWebPagePlugins)
                 {

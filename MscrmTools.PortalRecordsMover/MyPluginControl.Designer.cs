@@ -151,6 +151,7 @@ namespace MscrmTools.PortalRecordsMover
             // 
             // tsMain
             // 
+            this.tsMain.ImageScalingSize = new System.Drawing.Size(32, 32);
             this.tsMain.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.tsbClose,
             this.toolStripSeparator3,
@@ -430,6 +431,7 @@ namespace MscrmTools.PortalRecordsMover
             this.chErrorSecond,
             this.chSuccessSetState,
             this.chErrorSetState});
+            this.lvProgress.HideSelection = false;
             this.lvProgress.Location = new System.Drawing.Point(22, 144);
             this.lvProgress.Margin = new System.Windows.Forms.Padding(8, 10, 8, 10);
             this.lvProgress.Name = "lvProgress";

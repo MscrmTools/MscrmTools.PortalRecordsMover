@@ -26,7 +26,7 @@ namespace MscrmTools.PortalRecordsMover.AppCode
             recordsToDeactivate = new List<EntityReference>();
         }
 
-        public bool ProcessRecords(EntityCollection ec, List<EntityMetadata> emds, int organizationMajorVersion, BackgroundWorker worker)
+        public bool ProcessRecords(EntityCollection ec, List<EntityMetadata> emds, int organizationMajorVersion, BackgroundWorker worker, ImportSettings settings)
         {
             var records = new List<Entity>(ec.Entities);
             var progress = new ImportProgress(records.Count);
@@ -196,6 +196,37 @@ namespace MscrmTools.PortalRecordsMover.AppCode
                                     service.Create(record);
                                     logger.LogInfo(
                                         $"Record {record.GetAttributeValue<string>(entityProgress.Metadata.PrimaryNameAttribute)} created ({entityProgress.Entity}/{record.Id})");
+                                }
+                            }
+
+                            if (record.LogicalName == "annotation" && settings.CleanWebFiles)
+                            {
+                                var reference = record.GetAttributeValue<EntityReference>("objectid");
+                                if (reference?.LogicalName == "adx_webfile")
+                                {
+                                    logger.LogInfo($"Searching for extra annotation in web file {reference.Id:B}");
+
+                                    var qe = new QueryExpression("annotation")
+                                    {
+                                        NoLock = true,
+                                        Criteria = new FilterExpression
+                                        {
+                                            Conditions =
+                                            {
+                                                new ConditionExpression("annotationid", ConditionOperator.NotEqual,
+                                                    record.Id),
+                                                new ConditionExpression("objectid", ConditionOperator.Equal,
+                                                    reference.Id),
+                                            }
+                                        }
+                                    };
+
+                                    var extraNotes = service.RetrieveMultiple(qe);
+                                    foreach (var extraNote in extraNotes.Entities)
+                                    {
+                                        logger.LogInfo($"Deleting extra note {extraNote.Id:B}");
+                                        service.Delete(extraNote.LogicalName, extraNote.Id);
+                                    }
                                 }
                             }
                         }
