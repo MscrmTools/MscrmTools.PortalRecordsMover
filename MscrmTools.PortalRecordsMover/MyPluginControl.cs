@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading;
@@ -57,16 +58,11 @@ namespace MscrmTools.PortalRecordsMover
 
         private void btnBrowseImportFile_Click(object sender, EventArgs e)
         {
-            var ofd = new OpenFileDialog
-            {
-                Filter = "XML File (*.xml)|*.xml",
-                Title = "Select the file containing portal records to import"
-            };
-
-            if (ofd.ShowDialog(this) == DialogResult.OK)
+            var ifpd = new ImportPackageSelectionDialog();
+            if (ifpd.ShowDialog(this) == DialogResult.OK)
             {
                 btnImport.Enabled = true;
-                txtImportFilePath.Text = ofd.FileName;
+                txtImportFilePath.Text = ifpd.Path;
             }
             else if (txtImportFilePath.Text.Length == 0)
             {
@@ -137,6 +133,8 @@ namespace MscrmTools.PortalRecordsMover
                     wpcWebsiteFilter.SelectedWebSiteId = settings.WebsiteFilter;
                     wpcWebsiteFilter.IsEnabled = settings.WebsiteFilter != Guid.Empty;
                     ecpEntities.SelectItems(settings.SelectedEntities);
+                    cbExportAsFolderStructure.Checked = settings.ExportInFolderStructure;
+                    cbZipFolderStructure.Checked = settings.ZipFolderStructure;
                 }
                 catch (Exception error)
                 {
@@ -171,6 +169,8 @@ namespace MscrmTools.PortalRecordsMover
 
         private void tsbExport_Click(object sender, EventArgs e)
         {
+            ComputeSettings();
+
             var ec = new EntityCollection();
 
             // Gathering records to export
@@ -251,6 +251,56 @@ namespace MscrmTools.PortalRecordsMover
                     }
 
                     var list = (EntityCollection)evt.Result;
+
+                    if (settings.ExportInFolderStructure)
+                    {
+                        var fbd = new FolderBrowserDialog
+                        {
+                            Description = @"Folder where to save exported records"
+                        };
+                        if (fbd.ShowDialog(this) != DialogResult.OK) return;
+
+                        var timestampExport = $"Export_{DateTime.Now:yyyyMMdd_hhmmss}";
+                        var rootPath = Path.Combine(fbd.SelectedPath, timestampExport);
+                        var entities = list.Entities.GroupBy(ent => ent.LogicalName);
+                        foreach (var entity in entities)
+                        {
+                            var directory = Path.Combine(rootPath, entity.Key);
+                            if (!Directory.Exists(directory))
+                            {
+                                Directory.CreateDirectory(directory);
+                            }
+
+                            foreach (var record in entity)
+                            {
+                                var filePath = Path.Combine(directory, $"{record.Id:B}.xml");
+                                var xwSettings = new XmlWriterSettings { Indent = true };
+                                var serializer = new DataContractSerializer(typeof(Entity));
+
+                                using (var w = XmlWriter.Create(filePath, xwSettings))
+                                {
+                                    serializer.WriteObject(w, record);
+                                }
+                            }
+                        }
+
+                        if (settings.ZipFolderStructure)
+                        {
+                            var filename = Path.Combine(fbd.SelectedPath, $"{timestampExport}.zip");
+                            ZipFile.CreateFromDirectory(rootPath, filename);
+                            Directory.Delete(rootPath, true);
+
+                            MessageBox.Show(this, $@"Records exported to {filename}!", @"Success", MessageBoxButtons.OK,
+                                MessageBoxIcon.Information);
+                        }
+                        else
+                        {
+                            MessageBox.Show(this, $@"Records exported to {rootPath}!", @"Success", MessageBoxButtons.OK,
+                                MessageBoxIcon.Information);
+                        }
+
+                        return;
+                    }
 
                     var sfd = new SaveFileDialog
                     {
@@ -488,6 +538,8 @@ namespace MscrmTools.PortalRecordsMover
             settings.SelectedEntities = ecpEntities.SelectedMetadatas.Select(emd => emd.LogicalName).ToList();
             settings.AllEntities = ecpEntities.Metadata;
             settings.ActiveItemsOnly = chkActiveOnly.Checked;
+            settings.ExportInFolderStructure = cbExportAsFolderStructure.Checked;
+            settings.ZipFolderStructure = cbZipFolderStructure.Checked;
         }
 
         private void Import()
@@ -497,24 +549,16 @@ namespace MscrmTools.PortalRecordsMover
                 return;
             }
 
-            if (!File.Exists(txtImportFilePath.Text))
+            if (!File.Exists(txtImportFilePath.Text) && !Directory.Exists(txtImportFilePath.Text))
             {
-                MessageBox.Show(this, $"The file {txtImportFilePath.Text} does not exist!", "Error",
+                MessageBox.Show(this, $"The path \"{txtImportFilePath.Text}\" does not exist!", "Error",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
             btnCancel.Visible = true;
 
-            lblProgress.Text = "Deserializing file...";
-            SendMessageToStatusBar?.Invoke(this, new StatusBarMessageEventArgs("Deserializing file..."));
-
-            EntityCollection ec;
-            using (var reader = new StreamReader(txtImportFilePath.Text))
-            {
-                var serializer = new DataContractSerializer(typeof(EntityCollection), new List<Type> { typeof(Entity) });
-                ec = (EntityCollection)serializer.ReadObject(reader.BaseStream);
-            }
+            EntityCollection ec = FileManager.GetRecordsFromDisk(txtImportFilePath.Text);
 
             // References to websites
             var webSitesRefId = ec.Entities.SelectMany(e => e.Attributes)
@@ -865,5 +909,14 @@ namespace MscrmTools.PortalRecordsMover
         }
 
         #endregion Methods
+
+        private void cbExportAsFolderStructure_CheckedChanged(object sender, EventArgs e)
+        {
+            cbZipFolderStructure.Enabled = cbExportAsFolderStructure.Checked;
+            if (!cbZipFolderStructure.Enabled)
+            {
+                cbZipFolderStructure.Checked = false;
+            }
+        }
     }
 }
