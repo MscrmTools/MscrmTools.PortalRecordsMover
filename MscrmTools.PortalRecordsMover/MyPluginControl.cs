@@ -30,6 +30,7 @@ namespace MscrmTools.PortalRecordsMover
         private BackgroundWorker importWorker;
         private NoteManager nManager;
         private PluginManager pManager;
+        private RecordManager rManager;
         private ExportSettings settings;
 
         public MyPluginControl()
@@ -116,7 +117,7 @@ namespace MscrmTools.PortalRecordsMover
 
         private void loadSettingsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var ofDialog = new OpenFileDialog { Filter = "XML Document (*.xml)|*.xml" };
+            var ofDialog = new OpenFileDialog { Filter = @"XML Document (*.xml)|*.xml" };
             if (ofDialog.ShowDialog(this) == DialogResult.OK)
             {
                 var xdoc = new XmlDocument();
@@ -138,19 +139,19 @@ namespace MscrmTools.PortalRecordsMover
                 }
                 catch (Exception error)
                 {
-                    MessageBox.Show(this, $"An error occured: {error.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show(this, $@"An error occured: {error.Message}", @"Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
         }
 
         private void saveSettingsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var sfDialog = new SaveFileDialog { Filter = "XML Document (*.xml)|*.xml" };
+            var sfDialog = new SaveFileDialog { Filter = @"XML Document (*.xml)|*.xml" };
             if (sfDialog.ShowDialog(this) == DialogResult.OK)
             {
                 ComputeSettings();
                 XmlSerializerHelper.SerializeToFile(settings, sfDialog.FileName);
-                MessageBox.Show(this, $"Settings saved to {sfDialog.FileName}", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(this, $@"Settings saved to {sfDialog.FileName}", @"Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
 
@@ -182,17 +183,17 @@ namespace MscrmTools.PortalRecordsMover
 
             if (ec.Entities.Count == 0)
             {
-                MessageBox.Show(this, "No record selected!", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(this, @"No record selected!", @"Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
             foreach (var record in ec.Entities)
             {
                 var emd = settings.AllEntities.First(ent => ent.LogicalName == record.LogicalName);
-                if (!emd.IsIntersect.Value)
+                if (!(emd.IsIntersect ?? false))
                 {
                     var validAttributes = emd.Attributes
-                        .Where(a => a.IsValidForCreate.Value || a.IsValidForUpdate.Value)
+                        .Where(a => (a.IsValidForCreate ?? false) || (a.IsValidForUpdate ?? false))
                         .Select(a => a.LogicalName)
                         .ToArray();
 
@@ -204,17 +205,19 @@ namespace MscrmTools.PortalRecordsMover
                         }
                         else
                         {
-                            var er = record[record.Attributes.ElementAt(i).Key] as EntityReference;
-                            if (er != null && er.LogicalName == "contact")
+                            if (record[record.Attributes.ElementAt(i).Key] is EntityReference er
+                                && er.LogicalName == "contact")
                             {
                                 record.Attributes.Remove(record.Attributes.ElementAt(i));
                             }
                         }
                     }
-                    for (int i = 0; i < validAttributes.Length; i++)
-                    { //add any null attributes to force them to update to null.
-                        if (!record.Contains(validAttributes[i]))
-                            record[validAttributes[i]] = null;
+
+                    foreach (var va in validAttributes)
+                    {
+                        //add any null attributes to force them to update to null.
+                        if (!record.Contains(va))
+                            record[va] = null;
                     }
                 }
             }
@@ -230,7 +233,7 @@ namespace MscrmTools.PortalRecordsMover
                     if (webFiles.Any())
                     {
                         bw.ReportProgress(0, "Retrieving web files annotation records...");
-                        var records = RetrieveWebfileAnnotations(webFiles.Select(w => w.Id).ToList());
+                        var records = rManager.RetrieveWebfileAnnotations(webFiles.Select(w => w.Id).ToList());
                         foreach (var record in records)
                         {
                             ec.Entities.Insert(0, record);
@@ -245,7 +248,7 @@ namespace MscrmTools.PortalRecordsMover
 
                     if (evt.Error != null)
                     {
-                        MessageBox.Show(this, $"An error occured: {evt.Error.Message}", "Error", MessageBoxButtons.OK,
+                        MessageBox.Show(this, $@"An error occured: {evt.Error.Message}", @"Error", MessageBoxButtons.OK,
                             MessageBoxIcon.Error);
                         return;
                     }
@@ -304,7 +307,7 @@ namespace MscrmTools.PortalRecordsMover
 
                     var sfd = new SaveFileDialog
                     {
-                        Filter = "XML document (*.xml)|*.xml",
+                        Filter = @"XML document (*.xml)|*.xml",
                         AddExtension = true
                     };
 
@@ -318,7 +321,7 @@ namespace MscrmTools.PortalRecordsMover
                             serializer.WriteObject(w, list);
                         }
 
-                        MessageBox.Show(this, $"Records exported to {sfd.FileName}!", "Success", MessageBoxButtons.OK,
+                        MessageBox.Show(this, $@"Records exported to {sfd.FileName}!", @"Success", MessageBoxButtons.OK,
                             MessageBoxIcon.Information);
                     }
                 },
@@ -347,7 +350,7 @@ namespace MscrmTools.PortalRecordsMover
         {
             if (ecpEntities.SelectedMetadatas.Count == 0)
             {
-                MessageBox.Show(this, "No entity selected!", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(this, @"No entity selected!", @"Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
@@ -378,7 +381,7 @@ namespace MscrmTools.PortalRecordsMover
 
                     bw.ReportProgress(0, "Retrieving selected entities views layout...");
 
-                    results.Views = RetrieveViews(exSettings.Entities);
+                    results.Views = rManager.RetrieveViews(exSettings.Entities);
 
                     foreach (var entity in exSettings.Entities)
                     {
@@ -386,14 +389,14 @@ namespace MscrmTools.PortalRecordsMover
 
                         var er = new EntityResult
                         {
-                            Records = RetrieveRecords(entity, exSettings)
+                            Records = rManager.RetrieveRecords(entity, exSettings)
                         };
 
                         results.Entities.Add(er);
                     }
 
                     bw.ReportProgress(0, "Retrieving many to many relationships records...");
-                    results.NnRecords = RetrieveNnRecords(exSettings, results.Entities.SelectMany(a => a.Records.Entities).ToList());
+                    results.NnRecords = rManager.RetrieveNnRecords(exSettings, results.Entities.SelectMany(a => a.Records.Entities).ToList());
 
                     evt.Result = results;
                 },
@@ -408,7 +411,7 @@ namespace MscrmTools.PortalRecordsMover
 
                     if (evt.Error != null)
                     {
-                        MessageBox.Show(this, $"An error occured: {evt.Error.Message}", "Error", MessageBoxButtons.OK,
+                        MessageBox.Show(this, $@"An error occured: {evt.Error.Message}", @"Error", MessageBoxButtons.OK,
                             MessageBoxIcon.Error);
                         return;
                     }
@@ -459,7 +462,7 @@ namespace MscrmTools.PortalRecordsMover
                     }
 
                     tabCtrl.TabPages.AddRange(tabs.OrderBy(t => t.Text).ToArray());
-                    cbbTabSelection.Items.AddRange(tabs.OrderBy(t => t.Text).Select(t => t.Text).ToArray());
+                    cbbTabSelection.Items.AddRange(tabs.OrderBy(t => t.Text).Select(t => t.Text).Cast<object>().ToArray());
 
                     if (cbbTabSelection.Items.Count > 0)
                     {
@@ -502,7 +505,7 @@ namespace MscrmTools.PortalRecordsMover
                 {
                     if (evt.Error != null)
                     {
-                        MessageBox.Show(this, $"An error occured: {evt.Error.Message}", "Error", MessageBoxButtons.OK,
+                        MessageBox.Show(this, $@"An error occured: {evt.Error.Message}", @"Error", MessageBoxButtons.OK,
                             MessageBoxIcon.Error);
                         return;
                     }
@@ -526,6 +529,7 @@ namespace MscrmTools.PortalRecordsMover
             ecpEntities.Service = newService;
 
             nManager = new NoteManager(newService);
+            rManager = new RecordManager(newService);
 
             base.UpdateConnection(newService, detail, actionName, parameter);
         }
@@ -551,7 +555,7 @@ namespace MscrmTools.PortalRecordsMover
 
             if (!File.Exists(txtImportFilePath.Text) && !Directory.Exists(txtImportFilePath.Text))
             {
-                MessageBox.Show(this, $"The path \"{txtImportFilePath.Text}\" does not exist!", "Error",
+                MessageBox.Show(this, $@"The path ""{txtImportFilePath.Text}"" does not exist!", @"Error",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
@@ -687,7 +691,7 @@ namespace MscrmTools.PortalRecordsMover
             worker.RunWorkerCompleted += (s, evt) =>
             {
                 SendMessageToStatusBar?.Invoke(this, new StatusBarMessageEventArgs(string.Empty));
-                lblProgress.Text = "Records imported!";
+                lblProgress.Text = @"Records imported!";
                 llOpenLogFile.Visible = true;
 
                 btnImportClose.Enabled = true;
@@ -696,24 +700,26 @@ namespace MscrmTools.PortalRecordsMover
 
                 if (evt.Cancelled)
                 {
-                    lblProgress.Text = "Import was canceled!";
+                    lblProgress.Text = @"Import was canceled!";
                     return;
                 }
 
                 if (evt.Error != null)
                 {
-                    MessageBox.Show(this, $"An error occured: {evt.Error.Message}", "Error", MessageBoxButtons.OK,
+                    MessageBox.Show(this, $@"An error occured: {evt.Error.Message}", @"Error", MessageBoxButtons.OK,
                         MessageBoxIcon.Error);
                     return;
                 }
 
                 if (pbImport.IsOnError)
                 {
-                    MessageBox.Show(this, "Import complete with errors\n\nPlease review the logs", "Information", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show(this, @"Import complete with errors
+
+Please review the logs", @"Information", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
                 else
                 {
-                    MessageBox.Show(this, "Import complete", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show(this, @"Import complete", @"Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
             };
             worker.ProgressChanged += (s, evt) =>
@@ -725,8 +731,7 @@ namespace MscrmTools.PortalRecordsMover
                 }
                 else
                 {
-                    var progress = evt.UserState as ImportProgress;
-                    if (progress != null)
+                    if (evt.UserState is ImportProgress progress)
                     {
                         foreach (var ep in progress.Entities)
                         {
@@ -781,131 +786,6 @@ namespace MscrmTools.PortalRecordsMover
                 }
             };
             worker.RunWorkerAsync(ec);
-        }
-
-        private List<EntityResult> RetrieveNnRecords(ExportSettings settings, List<Entity> records)
-        {
-            var ers = new List<EntityResult>();
-            var rels = new List<ManyToManyRelationshipMetadata>();
-
-            foreach (var emd in settings.Entities)
-            {
-                foreach (var mm in emd.ManyToManyRelationships)
-                {
-                    var e1 = mm.Entity1LogicalName;
-                    var e2 = mm.Entity2LogicalName;
-                    var isValid = false;
-
-                    if (e1 == emd.LogicalName)
-                    {
-                        if (settings.Entities.Any(e => e.LogicalName == e2))
-                        {
-                            isValid = true;
-                        }
-                    }
-                    else
-                    {
-                        if (settings.Entities.Any(e => e.LogicalName == e1))
-                        {
-                            isValid = true;
-                        }
-                    }
-
-                    if (isValid && rels.All(r => r.IntersectEntityName != mm.IntersectEntityName))
-                    {
-                        rels.Add(mm);
-                    }
-                }
-            }
-
-            foreach (var mm in rels)
-            {
-                var ids = records.Where(r => r.LogicalName == mm.Entity1LogicalName).Select(r => r.Id).ToList();
-                if (!ids.Any())
-                {
-                    continue;
-                }
-
-                var query = new QueryExpression(mm.IntersectEntityName)
-                {
-                    ColumnSet = new ColumnSet(true),
-                    Criteria = new FilterExpression
-                    {
-                        Conditions =
-                        {
-                            new ConditionExpression(mm.Entity1IntersectAttribute, ConditionOperator.In, ids.ToArray())
-                        }
-                    }
-                };
-
-                ers.Add(new EntityResult { Records = Service.RetrieveMultiple(query) });
-            }
-
-            return ers;
-        }
-
-        private EntityCollection RetrieveRecords(EntityMetadata emd, ExportSettings settings)
-        {
-            var query = new QueryExpression(emd.LogicalName)
-            {
-                ColumnSet = new ColumnSet(true),
-                Criteria = new FilterExpression()
-            };
-
-            if (settings.CreateFilter.HasValue)
-            {
-                query.Criteria.AddCondition("createdon", ConditionOperator.OnOrAfter, settings.CreateFilter.Value.ToString("yyyy-MM-dd"));
-            }
-
-            if (settings.ModifyFilter.HasValue)
-            {
-                query.Criteria.AddCondition("modifiedon", ConditionOperator.OnOrAfter, settings.ModifyFilter.Value.ToString("yyyy-MM-dd"));
-            }
-
-            if (settings.WebsiteFilter != Guid.Empty && emd.Attributes.Any(a => a is LookupAttributeMetadata && ((LookupAttributeMetadata)a).Targets[0] == "adx_website"))
-            {
-                query.Criteria.AddCondition("adx_websiteid", ConditionOperator.Equal, settings.WebsiteFilter);
-            }
-
-            if (settings.ActiveItemsOnly && emd.LogicalName != "annotation")
-            {
-                query.Criteria.AddCondition("statecode", ConditionOperator.Equal, 0);
-            }
-
-            return Service.RetrieveMultiple(query);
-        }
-
-        private List<Entity> RetrieveViews(List<EntityMetadata> entities)
-        {
-            var query = new QueryExpression("savedquery")
-            {
-                ColumnSet = new ColumnSet("returnedtypecode", "layoutxml"),
-                Criteria = new FilterExpression
-                {
-                    Conditions =
-                    {
-                        new ConditionExpression("isquickfindquery", ConditionOperator.Equal, true),
-                        new ConditionExpression("returnedtypecode", ConditionOperator.In, entities.Select(e=>e.LogicalName).ToArray())
-                    }
-                }
-            };
-
-            return Service.RetrieveMultiple(query).Entities.ToList();
-        }
-
-        private List<Entity> RetrieveWebfileAnnotations(List<Guid> ids)
-        {
-            return Service.RetrieveMultiple(new QueryExpression("annotation")
-            {
-                ColumnSet = new ColumnSet(true),
-                Criteria = new FilterExpression
-                {
-                    Conditions =
-                    {
-                        new ConditionExpression("objectid", ConditionOperator.In, ids.ToArray())
-                    }
-                }
-            }).Entities.ToList();
         }
 
         #endregion Methods

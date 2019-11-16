@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Metadata;
+using MscrmTools.PortalRecordsMover.AppCode;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,6 +14,8 @@ namespace MscrmTools.PortalRecordsMover.Controls
         public RecordsListerControl(List<Entity> records, EntityMetadata emd, string layoutXml)
         {
             InitializeComponent();
+
+            lvRecords.ListViewItemSorter = new ListViewItemComparer();
 
             var doc = new XmlDocument();
             doc.LoadXml(layoutXml);
@@ -74,6 +77,8 @@ namespace MscrmTools.PortalRecordsMover.Controls
         public RecordsListerControl(List<Entity> records, List<Entity> allRecords, ManyToManyRelationshipMetadata mm, List<EntityMetadata> emds)
         {
             InitializeComponent();
+
+            lvRecords.ListViewItemSorter = new ListViewItemComparer();
 
             foreach (var record in records)
             {
