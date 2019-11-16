@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using Microsoft.Xrm.Sdk;
+﻿using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Messages;
 using Microsoft.Xrm.Sdk.Metadata;
 using Microsoft.Xrm.Sdk.Metadata.Query;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace MscrmTools.PortalRecordsMover.AppCode
 {
@@ -25,7 +25,8 @@ namespace MscrmTools.PortalRecordsMover.AppCode
                         "ManyToOneRelationships",
                         "IsIntersect",
                         "PrimaryNameAttribute",
-                        "Attributes"
+                        "Attributes",
+                        "ObjectTypeCode"
                     }
                 },
                 AttributeQuery = new AttributeQueryExpression
