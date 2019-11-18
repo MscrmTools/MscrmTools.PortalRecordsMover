@@ -425,7 +425,7 @@ namespace MscrmTools.PortalRecordsMover.AppCode
                 {
                     switch (emd.LogicalName)
                     {
-                        case "adx_entityformetadata":
+                        case "adx_entityformmetadata":
                             query.LinkEntities.Add(
                                 CreateParentEntityLinkToWebsite(
                                     emd.LogicalName,
@@ -435,7 +435,7 @@ namespace MscrmTools.PortalRecordsMover.AppCode
                                     settings.WebsiteFilter));
                             break;
 
-                        case "adx_webformetadata":
+                        case "adx_webformmetadata":
                             var le = CreateParentEntityLinkToWebsite(
                                 emd.LogicalName,
                                 "adx_webformstep",
