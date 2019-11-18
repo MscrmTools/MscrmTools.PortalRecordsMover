@@ -429,7 +429,7 @@ namespace MscrmTools.PortalRecordsMover.AppCode
                             query.LinkEntities.Add(
                                 CreateParentEntityLinkToWebsite(
                                     emd.LogicalName,
-                                    "adx_entityformid",
+                                    "adx_entityform",
                                     "adx_entityformid",
                                     "adx_entityform",
                                     settings.WebsiteFilter));
@@ -445,7 +445,7 @@ namespace MscrmTools.PortalRecordsMover.AppCode
 
                             le.LinkEntities.Add(CreateParentEntityLinkToWebsite(
                                 "adx_webformstep",
-                                "adx_webformid",
+                                "adx_webform",
                                 "adx_webformid",
                                 "adx_webform",
                                 settings.WebsiteFilter));
