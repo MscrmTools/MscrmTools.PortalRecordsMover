@@ -29,6 +29,14 @@ namespace MscrmTools.PortalRecordsMover.AppCode
         public bool ProcessRecords(EntityCollection ec, List<EntityMetadata> emds, int organizationMajorVersion, BackgroundWorker worker, ImportSettings settings)
         {
             var records = new List<Entity>(ec.Entities);
+
+            // Move annotation at the beginning if the list as the list will be
+            // inverted to allow list removal. This way, annotation are 
+            // processed as the last records
+            var annotations = records.Where(e => e.LogicalName == "annotation");
+            records = records.Except(annotations).ToList();
+            records.InsertRange(0, annotations);
+
             var progress = new ImportProgress(records.Count);
 
             var nextCycle = new List<Entity>();
