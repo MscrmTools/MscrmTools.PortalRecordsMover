@@ -46,22 +46,20 @@ namespace MscrmTools.PortalRecordsMover
             this.saveSettingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.scRight = new System.Windows.Forms.SplitContainer();
             this.gbOptions = new System.Windows.Forms.GroupBox();
+            this.cbZipFolderStructure = new System.Windows.Forms.CheckBox();
+            this.cbExportAsFolderStructure = new System.Windows.Forms.CheckBox();
             this.chkActiveOnly = new System.Windows.Forms.CheckBox();
+            this.wpcWebsiteFilter = new MscrmTools.PortalRecordsMover.Controls.WebsitePickerControl();
+            this.docModifyFilter = new MscrmTools.PortalRecordsMover.Controls.DateOptionControl();
+            this.docCreateFilter = new MscrmTools.PortalRecordsMover.Controls.DateOptionControl();
             this.tabCtrl = new System.Windows.Forms.TabControl();
             this.pnlTabSelection = new System.Windows.Forms.Panel();
             this.cbbTabSelection = new System.Windows.Forms.ComboBox();
             this.scMain = new System.Windows.Forms.SplitContainer();
+            this.ecpEntities = new MscrmTools.PortalRecordsMover.Controls.EntityPickerControl();
             this.pnlImport = new System.Windows.Forms.Panel();
             this.pnlImportMain = new System.Windows.Forms.Panel();
-            this.lblProgress = new System.Windows.Forms.Label();
-            this.lvProgress = new System.Windows.Forms.ListView();
-            this.chEntity = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.chSuccessFirst = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.chErrorFirst = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.chSuccessSecond = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.chErrorSecond = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.chSuccessSetState = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.chErrorSetState = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.pbImport = new MscrmTools.PortalRecordsMover.Controls.CustomProgressBar();
             this.pnlImportFooter = new System.Windows.Forms.Panel();
             this.btnCancel = new System.Windows.Forms.Button();
             this.llOpenLogFile = new System.Windows.Forms.LinkLabel();
@@ -73,13 +71,16 @@ namespace MscrmTools.PortalRecordsMover
             this.lblImportFileLabel = new System.Windows.Forms.Label();
             this.pnlImportHeader = new System.Windows.Forms.Panel();
             this.lblImportHeader = new System.Windows.Forms.Label();
-            this.cbExportAsFolderStructure = new System.Windows.Forms.CheckBox();
-            this.cbZipFolderStructure = new System.Windows.Forms.CheckBox();
-            this.pbImport = new MscrmTools.PortalRecordsMover.Controls.CustomProgressBar();
-            this.ecpEntities = new MscrmTools.PortalRecordsMover.Controls.EntityPickerControl();
-            this.wpcWebsiteFilter = new MscrmTools.PortalRecordsMover.Controls.WebsitePickerControl();
-            this.docModifyFilter = new MscrmTools.PortalRecordsMover.Controls.DateOptionControl();
-            this.docCreateFilter = new MscrmTools.PortalRecordsMover.Controls.DateOptionControl();
+            this.pnlProgressTiles = new System.Windows.Forms.Panel();
+            this.lblProgress = new System.Windows.Forms.Label();
+            this.lvProgress = new System.Windows.Forms.ListView();
+            this.chEntity = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.chSuccessFirst = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.chErrorFirst = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.chSuccessSecond = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.chErrorSecond = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.chSuccessSetState = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.chErrorSetState = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.tsMain.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.scRight)).BeginInit();
             this.scRight.Panel1.SuspendLayout();
@@ -103,7 +104,7 @@ namespace MscrmTools.PortalRecordsMover
             this.tsbLoad.Image = ((System.Drawing.Image)(resources.GetObject("tsbLoad.Image")));
             this.tsbLoad.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tsbLoad.Name = "tsbLoad";
-            this.tsbLoad.Size = new System.Drawing.Size(151, 36);
+            this.tsbLoad.Size = new System.Drawing.Size(151, 44);
             this.tsbLoad.Text = "Load items";
             this.tsbLoad.ToolTipText = "Load entities and website from the connected organization.\r\n\r\nThis step is mandat" +
     "ory before executing other actions";
@@ -112,7 +113,7 @@ namespace MscrmTools.PortalRecordsMover
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(6, 39);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(6, 50);
             // 
             // tsbRetrieveRecords
             // 
@@ -120,7 +121,7 @@ namespace MscrmTools.PortalRecordsMover
             this.tsbRetrieveRecords.Image = ((System.Drawing.Image)(resources.GetObject("tsbRetrieveRecords.Image")));
             this.tsbRetrieveRecords.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tsbRetrieveRecords.Name = "tsbRetrieveRecords";
-            this.tsbRetrieveRecords.Size = new System.Drawing.Size(206, 36);
+            this.tsbRetrieveRecords.Size = new System.Drawing.Size(206, 44);
             this.tsbRetrieveRecords.Text = "Retrieve records";
             this.tsbRetrieveRecords.ToolTipText = "Retrieve records based on options defined";
             this.tsbRetrieveRecords.Click += new System.EventHandler(this.tsbRetrieveRecords_Click);
@@ -128,7 +129,7 @@ namespace MscrmTools.PortalRecordsMover
             // toolStripSeparator2
             // 
             this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(6, 39);
+            this.toolStripSeparator2.Size = new System.Drawing.Size(6, 50);
             // 
             // tsbExport
             // 
@@ -136,7 +137,7 @@ namespace MscrmTools.PortalRecordsMover
             this.tsbExport.Image = ((System.Drawing.Image)(resources.GetObject("tsbExport.Image")));
             this.tsbExport.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tsbExport.Name = "tsbExport";
-            this.tsbExport.Size = new System.Drawing.Size(187, 36);
+            this.tsbExport.Size = new System.Drawing.Size(187, 44);
             this.tsbExport.Text = "Export records";
             this.tsbExport.ToolTipText = "Export records in a file";
             this.tsbExport.Click += new System.EventHandler(this.tsbExport_Click);
@@ -146,7 +147,7 @@ namespace MscrmTools.PortalRecordsMover
             this.tsbImportRecords.Image = ((System.Drawing.Image)(resources.GetObject("tsbImportRecords.Image")));
             this.tsbImportRecords.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tsbImportRecords.Name = "tsbImportRecords";
-            this.tsbImportRecords.Size = new System.Drawing.Size(191, 36);
+            this.tsbImportRecords.Size = new System.Drawing.Size(191, 44);
             this.tsbImportRecords.Text = "Import records";
             this.tsbImportRecords.ToolTipText = "Import records from a file";
             this.tsbImportRecords.Click += new System.EventHandler(this.tsbImportRecords_Click);
@@ -167,7 +168,7 @@ namespace MscrmTools.PortalRecordsMover
             this.tsMain.Location = new System.Drawing.Point(0, 0);
             this.tsMain.Name = "tsMain";
             this.tsMain.Padding = new System.Windows.Forms.Padding(0, 0, 4, 0);
-            this.tsMain.Size = new System.Drawing.Size(1866, 39);
+            this.tsMain.Size = new System.Drawing.Size(1866, 50);
             this.tsMain.TabIndex = 3;
             this.tsMain.Text = "tsMain";
             // 
@@ -177,19 +178,19 @@ namespace MscrmTools.PortalRecordsMover
             this.tsbClose.Image = ((System.Drawing.Image)(resources.GetObject("tsbClose.Image")));
             this.tsbClose.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tsbClose.Name = "tsbClose";
-            this.tsbClose.Size = new System.Drawing.Size(23, 36);
+            this.tsbClose.Size = new System.Drawing.Size(46, 44);
             this.tsbClose.Text = "Close";
             this.tsbClose.Click += new System.EventHandler(this.tsbClose_Click);
             // 
             // toolStripSeparator3
             // 
             this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(6, 39);
+            this.toolStripSeparator3.Size = new System.Drawing.Size(6, 50);
             // 
             // toolStripSeparator4
             // 
             this.toolStripSeparator4.Name = "toolStripSeparator4";
-            this.toolStripSeparator4.Size = new System.Drawing.Size(6, 39);
+            this.toolStripSeparator4.Size = new System.Drawing.Size(6, 50);
             // 
             // tsddSettings
             // 
@@ -200,20 +201,20 @@ namespace MscrmTools.PortalRecordsMover
             this.tsddSettings.Image = ((System.Drawing.Image)(resources.GetObject("tsddSettings.Image")));
             this.tsddSettings.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tsddSettings.Name = "tsddSettings";
-            this.tsddSettings.Size = new System.Drawing.Size(139, 36);
+            this.tsddSettings.Size = new System.Drawing.Size(139, 44);
             this.tsddSettings.Text = "Settings";
             // 
             // loadSettingsToolStripMenuItem
             // 
             this.loadSettingsToolStripMenuItem.Name = "loadSettingsToolStripMenuItem";
-            this.loadSettingsToolStripMenuItem.Size = new System.Drawing.Size(258, 38);
+            this.loadSettingsToolStripMenuItem.Size = new System.Drawing.Size(293, 44);
             this.loadSettingsToolStripMenuItem.Text = "Load Settings";
             this.loadSettingsToolStripMenuItem.Click += new System.EventHandler(this.loadSettingsToolStripMenuItem_Click);
             // 
             // saveSettingsToolStripMenuItem
             // 
             this.saveSettingsToolStripMenuItem.Name = "saveSettingsToolStripMenuItem";
-            this.saveSettingsToolStripMenuItem.Size = new System.Drawing.Size(258, 38);
+            this.saveSettingsToolStripMenuItem.Size = new System.Drawing.Size(293, 44);
             this.saveSettingsToolStripMenuItem.Text = "Save Settings";
             this.saveSettingsToolStripMenuItem.Click += new System.EventHandler(this.saveSettingsToolStripMenuItem_Click);
             // 
@@ -233,8 +234,8 @@ namespace MscrmTools.PortalRecordsMover
             // 
             this.scRight.Panel2.Controls.Add(this.tabCtrl);
             this.scRight.Panel2.Controls.Add(this.pnlTabSelection);
-            this.scRight.Size = new System.Drawing.Size(1554, 1211);
-            this.scRight.SplitterDistance = 422;
+            this.scRight.Size = new System.Drawing.Size(1554, 1200);
+            this.scRight.SplitterDistance = 418;
             this.scRight.SplitterWidth = 12;
             this.scRight.TabIndex = 0;
             // 
@@ -251,10 +252,34 @@ namespace MscrmTools.PortalRecordsMover
             this.gbOptions.Margin = new System.Windows.Forms.Padding(8, 10, 8, 10);
             this.gbOptions.Name = "gbOptions";
             this.gbOptions.Padding = new System.Windows.Forms.Padding(8, 10, 8, 10);
-            this.gbOptions.Size = new System.Drawing.Size(1554, 422);
+            this.gbOptions.Size = new System.Drawing.Size(1554, 418);
             this.gbOptions.TabIndex = 0;
             this.gbOptions.TabStop = false;
             this.gbOptions.Text = "Options";
+            // 
+            // cbZipFolderStructure
+            // 
+            this.cbZipFolderStructure.AutoSize = true;
+            this.cbZipFolderStructure.Enabled = false;
+            this.cbZipFolderStructure.Location = new System.Drawing.Point(348, 301);
+            this.cbZipFolderStructure.Margin = new System.Windows.Forms.Padding(4);
+            this.cbZipFolderStructure.Name = "cbZipFolderStructure";
+            this.cbZipFolderStructure.Size = new System.Drawing.Size(224, 29);
+            this.cbZipFolderStructure.TabIndex = 5;
+            this.cbZipFolderStructure.Text = "Zip folder structure";
+            this.cbZipFolderStructure.UseVisualStyleBackColor = true;
+            // 
+            // cbExportAsFolderStructure
+            // 
+            this.cbExportAsFolderStructure.AutoSize = true;
+            this.cbExportAsFolderStructure.Location = new System.Drawing.Point(8, 301);
+            this.cbExportAsFolderStructure.Margin = new System.Windows.Forms.Padding(4);
+            this.cbExportAsFolderStructure.Name = "cbExportAsFolderStructure";
+            this.cbExportAsFolderStructure.Size = new System.Drawing.Size(285, 29);
+            this.cbExportAsFolderStructure.TabIndex = 4;
+            this.cbExportAsFolderStructure.Text = "Export as folder structure";
+            this.cbExportAsFolderStructure.UseVisualStyleBackColor = true;
+            this.cbExportAsFolderStructure.CheckedChanged += new System.EventHandler(this.cbExportAsFolderStructure_CheckedChanged);
             // 
             // chkActiveOnly
             // 
@@ -267,6 +292,43 @@ namespace MscrmTools.PortalRecordsMover
             this.chkActiveOnly.Text = "Get only active records";
             this.chkActiveOnly.UseVisualStyleBackColor = true;
             // 
+            // wpcWebsiteFilter
+            // 
+            this.wpcWebsiteFilter.Dock = System.Windows.Forms.DockStyle.Top;
+            this.wpcWebsiteFilter.IsEnabled = false;
+            this.wpcWebsiteFilter.Location = new System.Drawing.Point(8, 164);
+            this.wpcWebsiteFilter.Margin = new System.Windows.Forms.Padding(8, 10, 8, 10);
+            this.wpcWebsiteFilter.Name = "wpcWebsiteFilter";
+            this.wpcWebsiteFilter.SelectedWebSiteId = new System.Guid("00000000-0000-0000-0000-000000000000");
+            this.wpcWebsiteFilter.Size = new System.Drawing.Size(1538, 65);
+            this.wpcWebsiteFilter.TabIndex = 2;
+            // 
+            // docModifyFilter
+            // 
+            this.docModifyFilter.Attribute = null;
+            this.docModifyFilter.Dock = System.Windows.Forms.DockStyle.Top;
+            this.docModifyFilter.IsEnabled = false;
+            this.docModifyFilter.Label = "Get records modified on or after";
+            this.docModifyFilter.Location = new System.Drawing.Point(8, 99);
+            this.docModifyFilter.Margin = new System.Windows.Forms.Padding(8, 10, 8, 10);
+            this.docModifyFilter.Name = "docModifyFilter";
+            this.docModifyFilter.SelectedDate = new System.DateTime(2017, 6, 13, 13, 59, 42, 271);
+            this.docModifyFilter.Size = new System.Drawing.Size(1538, 65);
+            this.docModifyFilter.TabIndex = 1;
+            // 
+            // docCreateFilter
+            // 
+            this.docCreateFilter.Attribute = null;
+            this.docCreateFilter.Dock = System.Windows.Forms.DockStyle.Top;
+            this.docCreateFilter.IsEnabled = false;
+            this.docCreateFilter.Label = "Get records created on or after";
+            this.docCreateFilter.Location = new System.Drawing.Point(8, 34);
+            this.docCreateFilter.Margin = new System.Windows.Forms.Padding(8, 10, 8, 10);
+            this.docCreateFilter.Name = "docCreateFilter";
+            this.docCreateFilter.SelectedDate = new System.DateTime(2017, 6, 13, 13, 59, 42, 288);
+            this.docCreateFilter.Size = new System.Drawing.Size(1538, 65);
+            this.docCreateFilter.TabIndex = 0;
+            // 
             // tabCtrl
             // 
             this.tabCtrl.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -274,7 +336,7 @@ namespace MscrmTools.PortalRecordsMover
             this.tabCtrl.Margin = new System.Windows.Forms.Padding(8, 10, 8, 10);
             this.tabCtrl.Name = "tabCtrl";
             this.tabCtrl.SelectedIndex = 0;
-            this.tabCtrl.Size = new System.Drawing.Size(1554, 725);
+            this.tabCtrl.Size = new System.Drawing.Size(1554, 718);
             this.tabCtrl.TabIndex = 5;
             this.tabCtrl.SelectedIndexChanged += new System.EventHandler(this.tabCtrl_SelectedIndexChanged);
             // 
@@ -304,7 +366,7 @@ namespace MscrmTools.PortalRecordsMover
             // scMain
             // 
             this.scMain.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.scMain.Location = new System.Drawing.Point(0, 39);
+            this.scMain.Location = new System.Drawing.Point(0, 50);
             this.scMain.Margin = new System.Windows.Forms.Padding(8, 10, 8, 10);
             this.scMain.Name = "scMain";
             // 
@@ -315,10 +377,20 @@ namespace MscrmTools.PortalRecordsMover
             // scMain.Panel2
             // 
             this.scMain.Panel2.Controls.Add(this.scRight);
-            this.scMain.Size = new System.Drawing.Size(1866, 1211);
+            this.scMain.Size = new System.Drawing.Size(1866, 1200);
             this.scMain.SplitterDistance = 300;
             this.scMain.SplitterWidth = 12;
             this.scMain.TabIndex = 4;
+            // 
+            // ecpEntities
+            // 
+            this.ecpEntities.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.ecpEntities.Location = new System.Drawing.Point(0, 0);
+            this.ecpEntities.Margin = new System.Windows.Forms.Padding(8, 10, 8, 10);
+            this.ecpEntities.Name = "ecpEntities";
+            this.ecpEntities.Service = null;
+            this.ecpEntities.Size = new System.Drawing.Size(300, 1200);
+            this.ecpEntities.TabIndex = 0;
             // 
             // pnlImport
             // 
@@ -340,86 +412,29 @@ namespace MscrmTools.PortalRecordsMover
             // 
             // pnlImportMain
             // 
-            this.pnlImportMain.Controls.Add(this.lblProgress);
-            this.pnlImportMain.Controls.Add(this.pbImport);
             this.pnlImportMain.Controls.Add(this.lvProgress);
+            this.pnlImportMain.Controls.Add(this.lblProgress);
+            this.pnlImportMain.Controls.Add(this.pnlProgressTiles);
+            this.pnlImportMain.Controls.Add(this.pbImport);
             this.pnlImportMain.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pnlImportMain.Location = new System.Drawing.Point(0, 169);
             this.pnlImportMain.Margin = new System.Windows.Forms.Padding(6);
             this.pnlImportMain.Name = "pnlImportMain";
+            this.pnlImportMain.Padding = new System.Windows.Forms.Padding(10);
             this.pnlImportMain.Size = new System.Drawing.Size(1330, 733);
             this.pnlImportMain.TabIndex = 9;
             this.pnlImportMain.Visible = false;
             // 
-            // lblProgress
+            // pbImport
             // 
-            this.lblProgress.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.lblProgress.Location = new System.Drawing.Point(14, 60);
-            this.lblProgress.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
-            this.lblProgress.Name = "lblProgress";
-            this.lblProgress.Size = new System.Drawing.Size(1294, 75);
-            this.lblProgress.TabIndex = 9;
-            this.lblProgress.TextAlign = System.Drawing.ContentAlignment.TopCenter;
-            // 
-            // lvProgress
-            // 
-            this.lvProgress.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.lvProgress.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.chEntity,
-            this.chSuccessFirst,
-            this.chErrorFirst,
-            this.chSuccessSecond,
-            this.chErrorSecond,
-            this.chSuccessSetState,
-            this.chErrorSetState});
-            this.lvProgress.HideSelection = false;
-            this.lvProgress.Location = new System.Drawing.Point(22, 144);
-            this.lvProgress.Margin = new System.Windows.Forms.Padding(8, 10, 8, 10);
-            this.lvProgress.Name = "lvProgress";
-            this.lvProgress.Size = new System.Drawing.Size(1282, 569);
-            this.lvProgress.TabIndex = 8;
-            this.lvProgress.UseCompatibleStateImageBehavior = false;
-            this.lvProgress.View = System.Windows.Forms.View.Details;
-            // 
-            // chEntity
-            // 
-            this.chEntity.Text = "Entity";
-            this.chEntity.Width = 200;
-            // 
-            // chSuccessFirst
-            // 
-            this.chSuccessFirst.Text = "Success (1st phase)";
-            this.chSuccessFirst.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            this.chSuccessFirst.Width = 120;
-            // 
-            // chErrorFirst
-            // 
-            this.chErrorFirst.Text = "Error (1st phase)";
-            this.chErrorFirst.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            this.chErrorFirst.Width = 120;
-            // 
-            // chSuccessSecond
-            // 
-            this.chSuccessSecond.Text = "Success (2nd phase)";
-            this.chSuccessSecond.Width = 120;
-            // 
-            // chErrorSecond
-            // 
-            this.chErrorSecond.Text = "Error (2nd phase)";
-            this.chErrorSecond.Width = 120;
-            // 
-            // chSuccessSetState
-            // 
-            this.chSuccessSetState.Text = "Success (Deactivation)";
-            this.chSuccessSetState.Width = 120;
-            // 
-            // chErrorSetState
-            // 
-            this.chErrorSetState.Text = "Error (Deactivation)";
-            this.chErrorSetState.Width = 120;
+            this.pbImport.Dock = System.Windows.Forms.DockStyle.Top;
+            this.pbImport.IsOnError = false;
+            this.pbImport.Location = new System.Drawing.Point(10, 10);
+            this.pbImport.Margin = new System.Windows.Forms.Padding(8, 10, 8, 10);
+            this.pbImport.Name = "pbImport";
+            this.pbImport.Size = new System.Drawing.Size(1310, 35);
+            this.pbImport.Step = 1;
+            this.pbImport.TabIndex = 7;
             // 
             // pnlImportFooter
             // 
@@ -551,88 +566,81 @@ namespace MscrmTools.PortalRecordsMover
             this.lblImportHeader.TabIndex = 0;
             this.lblImportHeader.Text = "Portal Records Import";
             // 
-            // cbExportAsFolderStructure
+            // pnlProgressTiles
             // 
-            this.cbExportAsFolderStructure.AutoSize = true;
-            this.cbExportAsFolderStructure.Location = new System.Drawing.Point(8, 301);
-            this.cbExportAsFolderStructure.Margin = new System.Windows.Forms.Padding(4);
-            this.cbExportAsFolderStructure.Name = "cbExportAsFolderStructure";
-            this.cbExportAsFolderStructure.Size = new System.Drawing.Size(285, 29);
-            this.cbExportAsFolderStructure.TabIndex = 4;
-            this.cbExportAsFolderStructure.Text = "Export as folder structure";
-            this.cbExportAsFolderStructure.UseVisualStyleBackColor = true;
-            this.cbExportAsFolderStructure.CheckedChanged += new System.EventHandler(this.cbExportAsFolderStructure_CheckedChanged);
+            this.pnlProgressTiles.Dock = System.Windows.Forms.DockStyle.Top;
+            this.pnlProgressTiles.Location = new System.Drawing.Point(10, 45);
+            this.pnlProgressTiles.Name = "pnlProgressTiles";
+            this.pnlProgressTiles.Padding = new System.Windows.Forms.Padding(10);
+            this.pnlProgressTiles.Size = new System.Drawing.Size(1310, 81);
+            this.pnlProgressTiles.TabIndex = 10;
             // 
-            // cbZipFolderStructure
+            // lblProgress
             // 
-            this.cbZipFolderStructure.AutoSize = true;
-            this.cbZipFolderStructure.Enabled = false;
-            this.cbZipFolderStructure.Location = new System.Drawing.Point(348, 301);
-            this.cbZipFolderStructure.Margin = new System.Windows.Forms.Padding(4);
-            this.cbZipFolderStructure.Name = "cbZipFolderStructure";
-            this.cbZipFolderStructure.Size = new System.Drawing.Size(224, 29);
-            this.cbZipFolderStructure.TabIndex = 5;
-            this.cbZipFolderStructure.Text = "Zip folder structure";
-            this.cbZipFolderStructure.UseVisualStyleBackColor = true;
+            this.lblProgress.Dock = System.Windows.Forms.DockStyle.Top;
+            this.lblProgress.Location = new System.Drawing.Point(10, 126);
+            this.lblProgress.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+            this.lblProgress.Name = "lblProgress";
+            this.lblProgress.Size = new System.Drawing.Size(1310, 52);
+            this.lblProgress.TabIndex = 11;
+            this.lblProgress.TextAlign = System.Drawing.ContentAlignment.TopCenter;
             // 
-            // pbImport
+            // lvProgress
             // 
-            this.pbImport.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.pbImport.IsOnError = false;
-            this.pbImport.Location = new System.Drawing.Point(22, 15);
-            this.pbImport.Margin = new System.Windows.Forms.Padding(8, 10, 8, 10);
-            this.pbImport.Name = "pbImport";
-            this.pbImport.Size = new System.Drawing.Size(1282, 35);
-            this.pbImport.Step = 1;
-            this.pbImport.TabIndex = 7;
+            this.lvProgress.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.chEntity,
+            this.chSuccessFirst,
+            this.chErrorFirst,
+            this.chSuccessSecond,
+            this.chErrorSecond,
+            this.chSuccessSetState,
+            this.chErrorSetState});
+            this.lvProgress.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lvProgress.HideSelection = false;
+            this.lvProgress.Location = new System.Drawing.Point(10, 178);
+            this.lvProgress.Margin = new System.Windows.Forms.Padding(8, 10, 8, 10);
+            this.lvProgress.Name = "lvProgress";
+            this.lvProgress.Size = new System.Drawing.Size(1310, 545);
+            this.lvProgress.TabIndex = 12;
+            this.lvProgress.UseCompatibleStateImageBehavior = false;
+            this.lvProgress.View = System.Windows.Forms.View.Details;
             // 
-            // ecpEntities
+            // chEntity
             // 
-            this.ecpEntities.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.ecpEntities.Location = new System.Drawing.Point(0, 0);
-            this.ecpEntities.Margin = new System.Windows.Forms.Padding(8, 10, 8, 10);
-            this.ecpEntities.Name = "ecpEntities";
-            this.ecpEntities.Service = null;
-            this.ecpEntities.Size = new System.Drawing.Size(300, 1211);
-            this.ecpEntities.TabIndex = 0;
+            this.chEntity.Text = "Entity";
+            this.chEntity.Width = 200;
             // 
-            // wpcWebsiteFilter
+            // chSuccessFirst
             // 
-            this.wpcWebsiteFilter.Dock = System.Windows.Forms.DockStyle.Top;
-            this.wpcWebsiteFilter.IsEnabled = false;
-            this.wpcWebsiteFilter.Location = new System.Drawing.Point(8, 164);
-            this.wpcWebsiteFilter.Margin = new System.Windows.Forms.Padding(8, 10, 8, 10);
-            this.wpcWebsiteFilter.Name = "wpcWebsiteFilter";
-            this.wpcWebsiteFilter.SelectedWebSiteId = new System.Guid("00000000-0000-0000-0000-000000000000");
-            this.wpcWebsiteFilter.Size = new System.Drawing.Size(1538, 65);
-            this.wpcWebsiteFilter.TabIndex = 2;
+            this.chSuccessFirst.Text = "Success (1st phase)";
+            this.chSuccessFirst.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.chSuccessFirst.Width = 120;
             // 
-            // docModifyFilter
+            // chErrorFirst
             // 
-            this.docModifyFilter.Attribute = null;
-            this.docModifyFilter.Dock = System.Windows.Forms.DockStyle.Top;
-            this.docModifyFilter.IsEnabled = false;
-            this.docModifyFilter.Label = "Get records modified on or after";
-            this.docModifyFilter.Location = new System.Drawing.Point(8, 99);
-            this.docModifyFilter.Margin = new System.Windows.Forms.Padding(8, 10, 8, 10);
-            this.docModifyFilter.Name = "docModifyFilter";
-            this.docModifyFilter.SelectedDate = new System.DateTime(2017, 6, 13, 13, 59, 42, 271);
-            this.docModifyFilter.Size = new System.Drawing.Size(1538, 65);
-            this.docModifyFilter.TabIndex = 1;
+            this.chErrorFirst.Text = "Error (1st phase)";
+            this.chErrorFirst.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.chErrorFirst.Width = 120;
             // 
-            // docCreateFilter
+            // chSuccessSecond
             // 
-            this.docCreateFilter.Attribute = null;
-            this.docCreateFilter.Dock = System.Windows.Forms.DockStyle.Top;
-            this.docCreateFilter.IsEnabled = false;
-            this.docCreateFilter.Label = "Get records created on or after";
-            this.docCreateFilter.Location = new System.Drawing.Point(8, 34);
-            this.docCreateFilter.Margin = new System.Windows.Forms.Padding(8, 10, 8, 10);
-            this.docCreateFilter.Name = "docCreateFilter";
-            this.docCreateFilter.SelectedDate = new System.DateTime(2017, 6, 13, 13, 59, 42, 288);
-            this.docCreateFilter.Size = new System.Drawing.Size(1538, 65);
-            this.docCreateFilter.TabIndex = 0;
+            this.chSuccessSecond.Text = "Success (2nd phase)";
+            this.chSuccessSecond.Width = 120;
+            // 
+            // chErrorSecond
+            // 
+            this.chErrorSecond.Text = "Error (2nd phase)";
+            this.chErrorSecond.Width = 120;
+            // 
+            // chSuccessSetState
+            // 
+            this.chSuccessSetState.Text = "Success (Deactivation)";
+            this.chSuccessSetState.Width = 120;
+            // 
+            // chErrorSetState
+            // 
+            this.chErrorSetState.Text = "Error (Deactivation)";
+            this.chErrorSetState.Width = 120;
             // 
             // MyPluginControl
             // 
@@ -693,16 +701,11 @@ namespace MscrmTools.PortalRecordsMover
         private System.Windows.Forms.Label lblImportFileLabel;
         private System.Windows.Forms.Panel pnlImportHeader;
         private System.Windows.Forms.Label lblImportHeader;
-        private System.Windows.Forms.ListView lvProgress;
-        private System.Windows.Forms.ColumnHeader chEntity;
-        private System.Windows.Forms.ColumnHeader chSuccessFirst;
-        private System.Windows.Forms.ColumnHeader chErrorFirst;
         private CustomProgressBar pbImport;
         private System.Windows.Forms.Panel pnlImportFooter;
         private System.Windows.Forms.Button btnImport;
         private System.Windows.Forms.Button btnImportClose;
         private System.Windows.Forms.Panel pnlImportMain;
-        private System.Windows.Forms.Label lblProgress;
         private System.Windows.Forms.LinkLabel llOpenLogFile;
         private System.Windows.Forms.ToolStripButton tsbClose;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
@@ -715,11 +718,17 @@ namespace MscrmTools.PortalRecordsMover
         private System.Windows.Forms.ToolStripMenuItem loadSettingsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem saveSettingsToolStripMenuItem;
         private System.Windows.Forms.Button btnCancel;
+        private System.Windows.Forms.CheckBox cbZipFolderStructure;
+        private System.Windows.Forms.CheckBox cbExportAsFolderStructure;
+        private System.Windows.Forms.ListView lvProgress;
+        private System.Windows.Forms.ColumnHeader chEntity;
+        private System.Windows.Forms.ColumnHeader chSuccessFirst;
+        private System.Windows.Forms.ColumnHeader chErrorFirst;
         private System.Windows.Forms.ColumnHeader chSuccessSecond;
         private System.Windows.Forms.ColumnHeader chErrorSecond;
         private System.Windows.Forms.ColumnHeader chSuccessSetState;
         private System.Windows.Forms.ColumnHeader chErrorSetState;
-        private System.Windows.Forms.CheckBox cbZipFolderStructure;
-        private System.Windows.Forms.CheckBox cbExportAsFolderStructure;
+        private System.Windows.Forms.Label lblProgress;
+        private System.Windows.Forms.Panel pnlProgressTiles;
     }
 }

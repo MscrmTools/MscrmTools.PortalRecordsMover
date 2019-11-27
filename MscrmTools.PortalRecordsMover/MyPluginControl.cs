@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -534,6 +535,34 @@ namespace MscrmTools.PortalRecordsMover
             base.UpdateConnection(newService, detail, actionName, parameter);
         }
 
+        private void AddTile(string text, string description)
+        {
+            Invoke(new Action(() =>
+            {
+                var ctrl = new ProgressTile(text) { Dock = DockStyle.Left };
+                pnlProgressTiles.Controls.Add(ctrl);
+                pnlProgressTiles.Controls.SetChildIndex(ctrl, 0);
+
+                lblProgress.Text = description;
+            }));
+        }
+
+        private void CancelTile()
+        {
+            Invoke(new Action(() =>
+            {
+                pnlProgressTiles.Controls.OfType<ProgressTile>().FirstOrDefault()?.Cancel();
+            }));
+        }
+
+        private void CompleteTile()
+        {
+            Invoke(new Action(() =>
+            {
+                pnlProgressTiles.Controls.OfType<ProgressTile>().FirstOrDefault()?.Complete();
+            }));
+        }
+
         private void ComputeSettings()
         {
             settings.CreateFilter = docCreateFilter.IsEnabled ? docCreateFilter.SelectedDate : (DateTime?)null;
@@ -645,57 +674,78 @@ namespace MscrmTools.PortalRecordsMover
 
                 if (emds.Count == 0)
                 {
-                    importWorker.ReportProgress(0, "Retrieving metadata...");
+                    AddTile("Retrieve metadata", "We need entities metadata to process your records");
+
                     emds = MetadataManager.GetEntitiesList(Service);
+
+                    CompleteTile();
                 }
 
                 if (iSettings.DeactivateWebPagePlugins)
                 {
-                    importWorker.ReportProgress(0, "Deactivating Webpage plugins steps...");
+                    AddTile("Disable plugins", "We need to disable web page plugins to ensure we don't create duplicates");
+
                     logger.LogInfo("Deactivating Webpage plugins steps");
 
                     pManager = new PluginManager(Service);
                     pManager.DeactivateWebpagePlugins();
+
+                    CompleteTile();
 
                     logger.LogInfo("Webpage plugins steps deactivated");
                 }
 
                 if (iSettings.RemoveJavaScriptFileRestriction && nManager.HasJsRestriction)
                 {
+                    AddTile("Remove file restriction", "We need to authorize JavaScript file type to create Web file correctly");
+
                     logger.LogInfo("Removing JavaScript file restriction");
 
-                    importWorker.ReportProgress(0, "Removing JavaScript file restriction...");
                     nManager.RemoveRestriction();
 
                     // Wait 2 seconds to be sure the settings is updated
                     Thread.Sleep(2000);
 
+                    CompleteTile();
+
                     logger.LogInfo("JavaScript file restriction removed");
                 }
 
-                importWorker.ReportProgress(0, "Processing records...");
+                AddTile("Process records", "Records are processed in three phases : one phase without lookup being populated. A second phase with lookup being populated. This ensure all relationships between records can be created on the second phase. And a third phase to deactivate records that need it.");
 
                 var rm = new RecordManager(Service);
                 evt.Cancel = rm.ProcessRecords((EntityCollection)evt.Argument, emds, ConnectionDetail.OrganizationMajorVersion, importWorker, iSettings);
 
+                if (evt.Cancel)
+                {
+                    CancelTile();
+                }
+                else
+                {
+                    CompleteTile();
+                }
+
                 if (iSettings.DeactivateWebPagePlugins)
                 {
-                    importWorker.ReportProgress(0, "Reactivating Webpage plugins steps...");
+                    AddTile("Enable plugins", "We are enabling web page plugins so that your portal work smoothly");
                     logger.LogInfo("Reactivating Webpage plugins steps");
 
                     pManager.ActivateWebpagePlugins();
 
                     logger.LogInfo("Webpage plugins steps activated");
+                    CompleteTile();
                 }
 
                 if (iSettings.RemoveJavaScriptFileRestriction && nManager.HasJsRestriction)
                 {
+                    AddTile("Add file restriction", "We are adding back restriction for JavaScript files.");
                     logger.LogInfo("Adding back JavaScript file restriction");
 
                     importWorker.ReportProgress(0, "Adding back JavaScript file restriction...");
                     nManager.AddRestriction();
 
                     logger.LogInfo("JavaScript file restriction added back");
+                    CompleteTile();
                 }
             };
             worker.RunWorkerCompleted += (s, evt) =>
@@ -784,6 +834,10 @@ Please review the logs", @"Information", MessageBoxButtons.OK, MessageBoxIcon.Wa
                                     item.SubItems[6].Text = (ep.ErrorSetState ?? 0).ToString();
                                 }
                             }
+
+                            item.ForeColor = ep.ErrorFirstPhase > 0 || ep.ErrorSecondPhase > 0 || ep.ErrorSetState > 0
+                                ? Color.Red
+                                : Color.Green;
 
                             if (ep.ErrorFirstPhase > 0 || ep.ErrorSecondPhase > 0 || ep.ErrorSetState > 0)
                             {
