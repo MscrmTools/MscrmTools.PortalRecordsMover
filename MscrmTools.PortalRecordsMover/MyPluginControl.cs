@@ -619,6 +619,16 @@ namespace MscrmTools.PortalRecordsMover
                 iSettings.CleanWebFiles = MessageBox.Show(this, message, @"Question", MessageBoxButtons.YesNo) == DialogResult.Yes;
             }
 
+            var lm = new LogManager(GetType());
+            if (File.Exists(lm.FilePath))
+            {
+                if (MessageBox.Show(this, @"A log file already exists. Would you like to create a new log file?", @"Question", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                {
+                    File.Copy(lm.FilePath, $"{lm.FilePath.Substring(0, lm.FilePath.Length - 4)}-{DateTime.Now:yyyyMMdd_HHmmss}.txt", true);
+                    File.Delete(lm.FilePath);
+                }
+            }
+
             btnImport.Enabled = false;
             pnlImportMain.Visible = true;
             pbImport.IsOnError = false;
