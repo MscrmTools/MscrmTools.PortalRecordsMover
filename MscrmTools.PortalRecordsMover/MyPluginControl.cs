@@ -156,6 +156,34 @@ namespace MscrmTools.PortalRecordsMover
             }
         }
 
+        private void MyPluginControl_Load(object sender, EventArgs e)
+        {
+            try
+            {
+                var noteType = (from assembly in AppDomain.CurrentDomain.GetAssemblies()
+                                from type in assembly.GetTypes()
+                                where type.Name == "Annotation"
+                                      && type.BaseType?.Name == "Entity"
+                                select type).FirstOrDefault();
+                if (noteType != null)
+                {
+                    MessageBox.Show(this,
+                        $@"Invalid file detected!
+
+{noteType.Module}
+
+This file is not respecting XrmToolBox best practices and might prevent this tool from transfering Annotations.
+
+Please remove this file from your Plugins folder", @"Warning", MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning);
+                }
+            }
+            catch
+            {
+                // Do nothing. We don't want to fail here
+            }
+        }
+
         private void saveSettingsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             var sfDialog = new SaveFileDialog { Filter = @"XML Document (*.xml)|*.xml" };

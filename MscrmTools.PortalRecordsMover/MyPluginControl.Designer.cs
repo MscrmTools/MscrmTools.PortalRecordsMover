@@ -40,12 +40,12 @@ namespace MscrmTools.PortalRecordsMover
             this.tsMain = new System.Windows.Forms.ToolStrip();
             this.tsbClose = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
+            this.tssbTransferData = new System.Windows.Forms.ToolStripSplitButton();
+            this.tsmiTansferToNewOrg = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             this.tsddSettings = new System.Windows.Forms.ToolStripDropDownButton();
             this.loadSettingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveSettingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.tssbTransferData = new System.Windows.Forms.ToolStripSplitButton();
-            this.tsmiTansferToNewOrg = new System.Windows.Forms.ToolStripMenuItem();
             this.scRight = new System.Windows.Forms.SplitContainer();
             this.gbOptions = new System.Windows.Forms.GroupBox();
             this.cbZipFolderStructure = new System.Windows.Forms.CheckBox();
@@ -115,7 +115,7 @@ namespace MscrmTools.PortalRecordsMover
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(6, 42);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(6, 50);
             // 
             // tsbRetrieveRecords
             // 
@@ -123,7 +123,7 @@ namespace MscrmTools.PortalRecordsMover
             this.tsbRetrieveRecords.Image = ((System.Drawing.Image)(resources.GetObject("tsbRetrieveRecords.Image")));
             this.tsbRetrieveRecords.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tsbRetrieveRecords.Name = "tsbRetrieveRecords";
-            this.tsbRetrieveRecords.Size = new System.Drawing.Size(222, 36);
+            this.tsbRetrieveRecords.Size = new System.Drawing.Size(206, 44);
             this.tsbRetrieveRecords.Text = "Retrieve records";
             this.tsbRetrieveRecords.ToolTipText = "Retrieve records based on options defined";
             this.tsbRetrieveRecords.Click += new System.EventHandler(this.tsbRetrieveRecords_Click);
@@ -131,7 +131,7 @@ namespace MscrmTools.PortalRecordsMover
             // toolStripSeparator2
             // 
             this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(6, 42);
+            this.toolStripSeparator2.Size = new System.Drawing.Size(6, 50);
             // 
             // tsbExport
             // 
@@ -139,7 +139,7 @@ namespace MscrmTools.PortalRecordsMover
             this.tsbExport.Image = ((System.Drawing.Image)(resources.GetObject("tsbExport.Image")));
             this.tsbExport.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tsbExport.Name = "tsbExport";
-            this.tsbExport.Size = new System.Drawing.Size(203, 36);
+            this.tsbExport.Size = new System.Drawing.Size(187, 44);
             this.tsbExport.Text = "Export records";
             this.tsbExport.ToolTipText = "Export records in a file";
             this.tsbExport.Click += new System.EventHandler(this.tsbExport_Click);
@@ -149,7 +149,7 @@ namespace MscrmTools.PortalRecordsMover
             this.tsbImportRecords.Image = ((System.Drawing.Image)(resources.GetObject("tsbImportRecords.Image")));
             this.tsbImportRecords.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tsbImportRecords.Name = "tsbImportRecords";
-            this.tsbImportRecords.Size = new System.Drawing.Size(207, 36);
+            this.tsbImportRecords.Size = new System.Drawing.Size(191, 44);
             this.tsbImportRecords.Text = "Import records";
             this.tsbImportRecords.ToolTipText = "Import records from a file";
             this.tsbImportRecords.Click += new System.EventHandler(this.tsbImportRecords_Click);
@@ -181,45 +181,14 @@ namespace MscrmTools.PortalRecordsMover
             this.tsbClose.Image = ((System.Drawing.Image)(resources.GetObject("tsbClose.Image")));
             this.tsbClose.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tsbClose.Name = "tsbClose";
-            this.tsbClose.Size = new System.Drawing.Size(46, 36);
+            this.tsbClose.Size = new System.Drawing.Size(46, 44);
             this.tsbClose.Text = "Close";
             this.tsbClose.Click += new System.EventHandler(this.tsbClose_Click);
             // 
             // toolStripSeparator3
             // 
             this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(6, 42);
-            // 
-            // toolStripSeparator4
-            // 
-            this.toolStripSeparator4.Name = "toolStripSeparator4";
-            this.toolStripSeparator4.Size = new System.Drawing.Size(6, 42);
-            // 
-            // tsddSettings
-            // 
-            this.tsddSettings.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.loadSettingsToolStripMenuItem,
-            this.saveSettingsToolStripMenuItem});
-            this.tsddSettings.Enabled = false;
-            this.tsddSettings.Image = ((System.Drawing.Image)(resources.GetObject("tsddSettings.Image")));
-            this.tsddSettings.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsddSettings.Name = "tsddSettings";
-            this.tsddSettings.Size = new System.Drawing.Size(155, 36);
-            this.tsddSettings.Text = "Settings";
-            // 
-            // loadSettingsToolStripMenuItem
-            // 
-            this.loadSettingsToolStripMenuItem.Name = "loadSettingsToolStripMenuItem";
-            this.loadSettingsToolStripMenuItem.Size = new System.Drawing.Size(293, 44);
-            this.loadSettingsToolStripMenuItem.Text = "Load Settings";
-            this.loadSettingsToolStripMenuItem.Click += new System.EventHandler(this.loadSettingsToolStripMenuItem_Click);
-            // 
-            // saveSettingsToolStripMenuItem
-            // 
-            this.saveSettingsToolStripMenuItem.Name = "saveSettingsToolStripMenuItem";
-            this.saveSettingsToolStripMenuItem.Size = new System.Drawing.Size(293, 44);
-            this.saveSettingsToolStripMenuItem.Text = "Save Settings";
-            this.saveSettingsToolStripMenuItem.Click += new System.EventHandler(this.saveSettingsToolStripMenuItem_Click);
+            this.toolStripSeparator3.Size = new System.Drawing.Size(6, 50);
             // 
             // tssbTransferData
             // 
@@ -241,6 +210,37 @@ namespace MscrmTools.PortalRecordsMover
             this.tsmiTansferToNewOrg.Text = "Transfert to a new organization";
             this.tsmiTansferToNewOrg.Visible = false;
             this.tsmiTansferToNewOrg.Click += new System.EventHandler(this.tsmiTansferToNewOrg_Click);
+            // 
+            // toolStripSeparator4
+            // 
+            this.toolStripSeparator4.Name = "toolStripSeparator4";
+            this.toolStripSeparator4.Size = new System.Drawing.Size(6, 50);
+            // 
+            // tsddSettings
+            // 
+            this.tsddSettings.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.loadSettingsToolStripMenuItem,
+            this.saveSettingsToolStripMenuItem});
+            this.tsddSettings.Enabled = false;
+            this.tsddSettings.Image = ((System.Drawing.Image)(resources.GetObject("tsddSettings.Image")));
+            this.tsddSettings.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.tsddSettings.Name = "tsddSettings";
+            this.tsddSettings.Size = new System.Drawing.Size(139, 44);
+            this.tsddSettings.Text = "Settings";
+            // 
+            // loadSettingsToolStripMenuItem
+            // 
+            this.loadSettingsToolStripMenuItem.Name = "loadSettingsToolStripMenuItem";
+            this.loadSettingsToolStripMenuItem.Size = new System.Drawing.Size(293, 44);
+            this.loadSettingsToolStripMenuItem.Text = "Load Settings";
+            this.loadSettingsToolStripMenuItem.Click += new System.EventHandler(this.loadSettingsToolStripMenuItem_Click);
+            // 
+            // saveSettingsToolStripMenuItem
+            // 
+            this.saveSettingsToolStripMenuItem.Name = "saveSettingsToolStripMenuItem";
+            this.saveSettingsToolStripMenuItem.Size = new System.Drawing.Size(293, 44);
+            this.saveSettingsToolStripMenuItem.Text = "Save Settings";
+            this.saveSettingsToolStripMenuItem.Click += new System.EventHandler(this.saveSettingsToolStripMenuItem_Click);
             // 
             // scRight
             // 
@@ -678,6 +678,7 @@ namespace MscrmTools.PortalRecordsMover
             this.Margin = new System.Windows.Forms.Padding(6);
             this.Name = "MyPluginControl";
             this.Size = new System.Drawing.Size(1866, 1250);
+            this.Load += new System.EventHandler(this.MyPluginControl_Load);
             this.tsMain.ResumeLayout(false);
             this.tsMain.PerformLayout();
             this.scRight.Panel1.ResumeLayout(false);
