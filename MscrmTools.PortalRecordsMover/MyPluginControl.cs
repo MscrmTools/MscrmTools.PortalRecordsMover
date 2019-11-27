@@ -7,6 +7,7 @@ using MscrmTools.PortalRecordsMover.Controls;
 using MscrmTools.PortalRecordsMover.Forms;
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
@@ -23,7 +24,7 @@ using XrmToolBox.Extensibility.Interfaces;
 
 namespace MscrmTools.PortalRecordsMover
 {
-    public partial class MyPluginControl : PluginControlBase, IGitHubPlugin, IHelpPlugin, IStatusBarMessenger
+    public partial class MyPluginControl : MultipleConnectionsPluginControlBase, IGitHubPlugin, IHelpPlugin, IStatusBarMessenger
     {
         private readonly ImportSettings iSettings;
         private readonly LogManager logger;
@@ -33,6 +34,7 @@ namespace MscrmTools.PortalRecordsMover
         private PluginManager pManager;
         private RecordManager rManager;
         private ExportSettings settings;
+        private IOrganizationService targetService;
 
         public MyPluginControl()
         {
@@ -110,6 +112,15 @@ namespace MscrmTools.PortalRecordsMover
             }
         }
 
+        private void cbExportAsFolderStructure_CheckedChanged(object sender, EventArgs e)
+        {
+            cbZipFolderStructure.Enabled = cbExportAsFolderStructure.Checked;
+            if (!cbZipFolderStructure.Enabled)
+            {
+                cbZipFolderStructure.Checked = false;
+            }
+        }
+
         private void llOpenLogFile_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
             string path = Path.Combine(Paths.LogsPath, $"{GetType().Assembly.FullName.Split(',')[0]}.log");
@@ -170,6 +181,299 @@ namespace MscrmTools.PortalRecordsMover
         }
 
         private void tsbExport_Click(object sender, EventArgs e)
+        {
+            ExportData(true);
+        }
+
+        private void tsbImportRecords_Click(object sender, EventArgs e)
+        {
+            lblImportHeader.Text = @"Portal Records Import";
+            pnlImportFile.Visible = true;
+            pnlImport.BringToFront();
+            tsMain.Enabled = false;
+            pnlImport.Visible = true;
+            btnImport.Visible = true;
+            btnImport.Enabled = false;
+        }
+
+        private void tsbLoad_Click(object sender, EventArgs e)
+        {
+            ExecuteMethod(LoadItems);
+        }
+
+        private void tsbRetrieveRecords_Click(object sender, EventArgs e)
+        {
+            if (ecpEntities.SelectedMetadatas.Count == 0)
+            {
+                MessageBox.Show(this, @"No entity selected!", @"Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            ComputeSettings();
+
+            tabCtrl.SelectedIndexChanged -= tabCtrl_SelectedIndexChanged;
+            cbbTabSelection.SelectedIndexChanged -= cbbTabSelection_SelectedIndexChanged;
+
+            tabCtrl.TabPages.Clear();
+            cbbTabSelection.Items.Clear();
+
+            WorkAsync(new WorkAsyncInfo
+            {
+                Message = "Loading entities...",
+                AsyncArgument = settings,
+                IsCancelable = true,
+                Work = (bw, evt) =>
+                {
+                    var exSettings = (ExportSettings)evt.Argument;
+
+                    if (bw.CancellationPending)
+                    {
+                        bw.ReportProgress(0, "Cancelling...");
+                        bw.CancelAsync();
+                    }
+
+                    var results = new ExportResults { Settings = exSettings };
+
+                    bw.ReportProgress(0, "Retrieving selected entities views layout...");
+
+                    results.Views = rManager.RetrieveViews(exSettings.Entities);
+
+                    foreach (var entity in exSettings.Entities)
+                    {
+                        bw.ReportProgress(0, $"Retrieving records for entity {entity.DisplayName?.UserLocalizedLabel?.Label ?? entity.LogicalName}...");
+
+                        var er = new EntityResult
+                        {
+                            Records = rManager.RetrieveRecords(entity, exSettings)
+                        };
+
+                        results.Entities.Add(er);
+                    }
+
+                    bw.ReportProgress(0, "Retrieving many to many relationships records...");
+                    results.NnRecords = rManager.RetrieveNnRecords(exSettings, results.Entities.SelectMany(a => a.Records.Entities).ToList());
+
+                    evt.Result = results;
+                },
+                PostWorkCallBack = evt =>
+                {
+                    SendMessageToStatusBar?.Invoke(this, new StatusBarMessageEventArgs(string.Empty));
+
+                    if (evt.Cancelled)
+                    {
+                        return;
+                    }
+
+                    if (evt.Error != null)
+                    {
+                        MessageBox.Show(this, $@"An error occured: {evt.Error.Message}", @"Error", MessageBoxButtons.OK,
+                            MessageBoxIcon.Error);
+                        return;
+                    }
+
+                    tsbExport.Enabled = true;
+                    tssbTransferData.Enabled = true;
+                    pnlTabSelection.Visible = true;
+
+                    var results = (ExportResults)evt.Result;
+
+                    var tabs = new List<TabPage>();
+
+                    foreach (var entity in results.Entities)
+                    {
+                        var emd = results.Settings.AllEntities.First(ent => ent.LogicalName == entity.Records.EntityName);
+                        var tabPage = new TabPage($"{emd.DisplayName?.UserLocalizedLabel?.Label ?? emd.SchemaName} ({entity.Records.Entities.Count})");
+                        tabs.Add(tabPage);
+
+                        var layoutxml = results.Views.First(
+                            v => v.GetAttributeValue<string>("returnedtypecode") == emd.LogicalName)
+                            .GetAttributeValue<string>("layoutxml");
+
+                        var rl = new RecordsListerControl(entity.Records.Entities.ToList(), emd, layoutxml)
+                        {
+                            Dock = DockStyle.Fill
+                        };
+
+                        tabPage.Controls.Add(rl);
+                    }
+
+                    foreach (var entity in results.NnRecords)
+                    {
+                        var emd = results.Settings.AllEntities.First(ent => ent.LogicalName == entity.Records.EntityName);
+                        var rel = results.Settings.AllEntities
+                            .SelectMany(ent => ent.ManyToManyRelationships)
+                            .First(r => r.IntersectEntityName == emd.LogicalName);
+
+                        var name = $"{results.Settings.AllEntities.First(ent => ent.LogicalName == rel.Entity1LogicalName).DisplayName?.UserLocalizedLabel?.Label} / {results.Settings.AllEntities.First(ent => ent.LogicalName == rel.Entity2LogicalName).DisplayName?.UserLocalizedLabel?.Label}";
+
+                        var tabPage = new TabPage(name);
+                        tabs.Add(tabPage);
+
+                        var rl = new RecordsListerControl(entity.Records.Entities.ToList(), results.Entities.SelectMany(rs => rs.Records.Entities).ToList(), rel, results.Settings.AllEntities)
+                        {
+                            Dock = DockStyle.Fill
+                        };
+
+                        tabPage.Controls.Add(rl);
+                    }
+
+                    tabCtrl.TabPages.AddRange(tabs.OrderBy(t => t.Text).ToArray());
+                    cbbTabSelection.Items.AddRange(tabs.OrderBy(t => t.Text).Select(t => t.Text).Cast<object>().ToArray());
+
+                    if (cbbTabSelection.Items.Count > 0)
+                    {
+                        cbbTabSelection.SelectedIndex = 0;
+                    }
+
+                    tabCtrl.SelectedIndexChanged += tabCtrl_SelectedIndexChanged;
+                    cbbTabSelection.SelectedIndexChanged += cbbTabSelection_SelectedIndexChanged;
+                },
+                ProgressChanged = evt =>
+                {
+                    SetWorkingMessage(evt.UserState.ToString());
+                    SendMessageToStatusBar?.Invoke(this, new StatusBarMessageEventArgs(evt.UserState.ToString()));
+                }
+            });
+        }
+
+        private void tsbTransferData_Click(object sender, EventArgs e)
+        {
+            if (targetService == null)
+            {
+                AddAdditionalOrganization();
+            }
+            else
+            {
+                pnlImportFile.Visible = false;
+                pnlImport.BringToFront();
+                tsMain.Enabled = false;
+                pnlImport.Visible = true;
+                btnImport.Visible = false;
+
+                ExportData(false);
+            }
+        }
+
+        private void tsmiTansferToNewOrg_Click(object sender, EventArgs e)
+        {
+            AddAdditionalOrganization();
+        }
+
+        #endregion Events
+
+        #region Methods
+
+        public void LoadItems()
+        {
+            WorkAsync(new WorkAsyncInfo
+            {
+                Message = "Loading entities...",
+                Work = (bw, evt) =>
+                {
+                    ecpEntities.LoadEntities(settings);
+                    emds = ecpEntities.Metadata;
+
+                    bw.ReportProgress(0, "Loading Web sites");
+
+                    evt.Result = Service.RetrieveMultiple(new QueryExpression("adx_website")
+                    {
+                        ColumnSet = new ColumnSet(true)
+                    }).Entities.Select(record => new Website(record)).ToList();
+                },
+                PostWorkCallBack = evt =>
+                {
+                    if (evt.Error != null)
+                    {
+                        MessageBox.Show(this, $@"An error occured: {evt.Error.Message}", @"Error", MessageBoxButtons.OK,
+                            MessageBoxIcon.Error);
+                        return;
+                    }
+
+                    ecpEntities.FillList();
+                    wpcWebsiteFilter.Websites = (List<Website>)evt.Result;
+
+                    tsbRetrieveRecords.Enabled = true;
+                    tsddSettings.Enabled = true;
+                },
+                ProgressChanged = evt =>
+                {
+                    SetWorkingMessage(evt.UserState.ToString());
+                    SendMessageToStatusBar?.Invoke(this, new StatusBarMessageEventArgs(evt.UserState.ToString()));
+                }
+            });
+        }
+
+        public override void UpdateConnection(IOrganizationService newService, ConnectionDetail detail, string actionName, object parameter)
+        {
+            ecpEntities.Service = newService;
+
+            nManager = new NoteManager(newService);
+            rManager = new RecordManager(newService);
+
+            base.UpdateConnection(newService, detail, actionName, parameter);
+        }
+
+        protected override void ConnectionDetailsUpdated(NotifyCollectionChangedEventArgs e)
+        {
+            if (e.Action == NotifyCollectionChangedAction.Add)
+            {
+                var detail = AdditionalConnectionDetails.Last();
+                targetService = detail.GetCrmServiceClient();
+
+                tssbTransferData.Text = $@"Transfer records to {detail.OrganizationFriendlyName}";
+                tsmiTansferToNewOrg.Visible = true;
+
+                pnlImportFile.Visible = false;
+                pnlImport.BringToFront();
+                tsMain.Enabled = false;
+                pnlImport.Visible = true;
+                btnImport.Visible = false;
+
+                ExportData(false);
+            }
+        }
+
+        private void AddTile(string text, string description)
+        {
+            Invoke(new Action(() =>
+            {
+                var ctrl = new ProgressTile(text) { Dock = DockStyle.Left };
+                pnlProgressTiles.Controls.Add(ctrl);
+                pnlProgressTiles.Controls.SetChildIndex(ctrl, 0);
+
+                lblProgress.Text = description;
+            }));
+        }
+
+        private void CancelTile()
+        {
+            Invoke(new Action(() =>
+            {
+                pnlProgressTiles.Controls.OfType<ProgressTile>().FirstOrDefault()?.Cancel();
+            }));
+        }
+
+        private void CompleteTile()
+        {
+            Invoke(new Action(() =>
+            {
+                pnlProgressTiles.Controls.OfType<ProgressTile>().FirstOrDefault()?.Complete();
+            }));
+        }
+
+        private void ComputeSettings()
+        {
+            settings.CreateFilter = docCreateFilter.IsEnabled ? docCreateFilter.SelectedDate : (DateTime?)null;
+            settings.ModifyFilter = docModifyFilter.IsEnabled ? docModifyFilter.SelectedDate : (DateTime?)null;
+            settings.WebsiteFilter = wpcWebsiteFilter.IsEnabled ? wpcWebsiteFilter.SelectedWebSiteId : Guid.Empty;
+            settings.SelectedEntities = ecpEntities.SelectedMetadatas.Select(emd => emd.LogicalName).ToList();
+            settings.AllEntities = ecpEntities.Metadata;
+            settings.ActiveItemsOnly = chkActiveOnly.Checked;
+            settings.ExportInFolderStructure = cbExportAsFolderStructure.Checked;
+            settings.ZipFolderStructure = cbZipFolderStructure.Checked;
+        }
+
+        private void ExportData(bool isFileExport)
         {
             ComputeSettings();
 
@@ -256,74 +560,14 @@ namespace MscrmTools.PortalRecordsMover
 
                     var list = (EntityCollection)evt.Result;
 
-                    if (settings.ExportInFolderStructure)
+                    if (isFileExport)
                     {
-                        var fbd = new FolderBrowserDialog
-                        {
-                            Description = @"Folder where to save exported records"
-                        };
-                        if (fbd.ShowDialog(this) != DialogResult.OK) return;
-
-                        var timestampExport = $"Export_{DateTime.Now:yyyyMMdd_hhmmss}";
-                        var rootPath = Path.Combine(fbd.SelectedPath, timestampExport);
-                        var entities = list.Entities.GroupBy(ent => ent.LogicalName);
-                        foreach (var entity in entities)
-                        {
-                            var directory = Path.Combine(rootPath, entity.Key);
-                            if (!Directory.Exists(directory))
-                            {
-                                Directory.CreateDirectory(directory);
-                            }
-
-                            foreach (var record in entity)
-                            {
-                                var filePath = Path.Combine(directory, $"{record.Id:B}.xml");
-                                var xwSettings = new XmlWriterSettings { Indent = true };
-                                var serializer = new DataContractSerializer(typeof(Entity));
-
-                                using (var w = XmlWriter.Create(filePath, xwSettings))
-                                {
-                                    serializer.WriteObject(w, record);
-                                }
-                            }
-                        }
-
-                        if (settings.ZipFolderStructure)
-                        {
-                            var filename = Path.Combine(fbd.SelectedPath, $"{timestampExport}.zip");
-                            ZipFile.CreateFromDirectory(rootPath, filename);
-                            Directory.Delete(rootPath, true);
-
-                            MessageBox.Show(this, $@"Records exported to {filename}!", @"Success", MessageBoxButtons.OK,
-                                MessageBoxIcon.Information);
-                        }
-                        else
-                        {
-                            MessageBox.Show(this, $@"Records exported to {rootPath}!", @"Success", MessageBoxButtons.OK,
-                                MessageBoxIcon.Information);
-                        }
-
-                        return;
+                        ExportToDisk(list);
                     }
-
-                    var sfd = new SaveFileDialog
+                    else
                     {
-                        Filter = @"XML document (*.xml)|*.xml",
-                        AddExtension = true
-                    };
-
-                    if (sfd.ShowDialog(this) == DialogResult.OK)
-                    {
-                        var xwSettings = new XmlWriterSettings { Indent = true };
-                        var serializer = new DataContractSerializer(typeof(EntityCollection), new List<Type> { typeof(Entity) });
-
-                        using (var w = XmlWriter.Create(sfd.FileName, xwSettings))
-                        {
-                            serializer.WriteObject(w, list);
-                        }
-
-                        MessageBox.Show(this, $@"Records exported to {sfd.FileName}!", @"Success", MessageBoxButtons.OK,
-                            MessageBoxIcon.Information);
+                        lblImportHeader.Text = @"Portal Records Transfer";
+                        TransferData(list, targetService);
                     }
                 },
                 ProgressChanged = evt =>
@@ -334,245 +578,77 @@ namespace MscrmTools.PortalRecordsMover
             });
         }
 
-        private void tsbImportRecords_Click(object sender, EventArgs e)
+        private void ExportToDisk(EntityCollection list)
         {
-            pnlImport.BringToFront();
-            tsMain.Enabled = false;
-            pnlImport.Visible = true;
-            btnImport.Enabled = false;
-        }
-
-        private void tsbLoad_Click(object sender, EventArgs e)
-        {
-            ExecuteMethod(LoadItems);
-        }
-
-        private void tsbRetrieveRecords_Click(object sender, EventArgs e)
-        {
-            if (ecpEntities.SelectedMetadatas.Count == 0)
+            if (settings.ExportInFolderStructure)
             {
-                MessageBox.Show(this, @"No entity selected!", @"Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                var fbd = new FolderBrowserDialog
+                {
+                    Description = @"Folder where to save exported records"
+                };
+                if (fbd.ShowDialog(this) != DialogResult.OK) return;
+
+                var timestampExport = $"Export_{DateTime.Now:yyyyMMdd_hhmmss}";
+                var rootPath = Path.Combine(fbd.SelectedPath, timestampExport);
+                var entities = list.Entities.GroupBy(ent => ent.LogicalName);
+                foreach (var entity in entities)
+                {
+                    var directory = Path.Combine(rootPath, entity.Key);
+                    if (!Directory.Exists(directory))
+                    {
+                        Directory.CreateDirectory(directory);
+                    }
+
+                    foreach (var record in entity)
+                    {
+                        var filePath = Path.Combine(directory, $"{record.Id:B}.xml");
+                        var xwSettings = new XmlWriterSettings { Indent = true };
+                        var serializer = new DataContractSerializer(typeof(Entity));
+
+                        using (var w = XmlWriter.Create(filePath, xwSettings))
+                        {
+                            serializer.WriteObject(w, record);
+                        }
+                    }
+                }
+
+                if (settings.ZipFolderStructure)
+                {
+                    var filename = Path.Combine(fbd.SelectedPath, $"{timestampExport}.zip");
+                    ZipFile.CreateFromDirectory(rootPath, filename);
+                    Directory.Delete(rootPath, true);
+
+                    MessageBox.Show(this, $@"Records exported to {filename}!", @"Success", MessageBoxButtons.OK,
+                        MessageBoxIcon.Information);
+                }
+                else
+                {
+                    MessageBox.Show(this, $@"Records exported to {rootPath}!", @"Success", MessageBoxButtons.OK,
+                        MessageBoxIcon.Information);
+                }
+
                 return;
             }
 
-            ComputeSettings();
-
-            tabCtrl.SelectedIndexChanged -= tabCtrl_SelectedIndexChanged;
-            cbbTabSelection.SelectedIndexChanged -= cbbTabSelection_SelectedIndexChanged;
-
-            tabCtrl.TabPages.Clear();
-            cbbTabSelection.Items.Clear();
-
-            WorkAsync(new WorkAsyncInfo
+            var sfd = new SaveFileDialog
             {
-                Message = "Loading entities...",
-                AsyncArgument = settings,
-                IsCancelable = true,
-                Work = (bw, evt) =>
+                Filter = @"XML document (*.xml)|*.xml",
+                AddExtension = true
+            };
+
+            if (sfd.ShowDialog(this) == DialogResult.OK)
+            {
+                var xwSettings = new XmlWriterSettings { Indent = true };
+                var serializer = new DataContractSerializer(typeof(EntityCollection), new List<Type> { typeof(Entity) });
+
+                using (var w = XmlWriter.Create(sfd.FileName, xwSettings))
                 {
-                    var exSettings = (ExportSettings)evt.Argument;
-
-                    if (bw.CancellationPending)
-                    {
-                        bw.ReportProgress(0, "Cancelling...");
-                        bw.CancelAsync();
-                    }
-
-                    var results = new ExportResults { Settings = exSettings };
-
-                    bw.ReportProgress(0, "Retrieving selected entities views layout...");
-
-                    results.Views = rManager.RetrieveViews(exSettings.Entities);
-
-                    foreach (var entity in exSettings.Entities)
-                    {
-                        bw.ReportProgress(0, $"Retrieving records for entity {entity.DisplayName?.UserLocalizedLabel?.Label ?? entity.LogicalName}...");
-
-                        var er = new EntityResult
-                        {
-                            Records = rManager.RetrieveRecords(entity, exSettings)
-                        };
-
-                        results.Entities.Add(er);
-                    }
-
-                    bw.ReportProgress(0, "Retrieving many to many relationships records...");
-                    results.NnRecords = rManager.RetrieveNnRecords(exSettings, results.Entities.SelectMany(a => a.Records.Entities).ToList());
-
-                    evt.Result = results;
-                },
-                PostWorkCallBack = evt =>
-                {
-                    SendMessageToStatusBar?.Invoke(this, new StatusBarMessageEventArgs(string.Empty));
-
-                    if (evt.Cancelled)
-                    {
-                        return;
-                    }
-
-                    if (evt.Error != null)
-                    {
-                        MessageBox.Show(this, $@"An error occured: {evt.Error.Message}", @"Error", MessageBoxButtons.OK,
-                            MessageBoxIcon.Error);
-                        return;
-                    }
-
-                    tsbExport.Enabled = true;
-                    pnlTabSelection.Visible = true;
-
-                    var results = (ExportResults)evt.Result;
-
-                    var tabs = new List<TabPage>();
-
-                    foreach (var entity in results.Entities)
-                    {
-                        var emd = results.Settings.AllEntities.First(ent => ent.LogicalName == entity.Records.EntityName);
-                        var tabPage = new TabPage($"{emd.DisplayName?.UserLocalizedLabel?.Label ?? emd.SchemaName} ({entity.Records.Entities.Count})");
-                        tabs.Add(tabPage);
-
-                        var layoutxml = results.Views.First(
-                            v => v.GetAttributeValue<string>("returnedtypecode") == emd.LogicalName)
-                            .GetAttributeValue<string>("layoutxml");
-
-                        var rl = new RecordsListerControl(entity.Records.Entities.ToList(), emd, layoutxml)
-                        {
-                            Dock = DockStyle.Fill
-                        };
-
-                        tabPage.Controls.Add(rl);
-                    }
-
-                    foreach (var entity in results.NnRecords)
-                    {
-                        var emd = results.Settings.AllEntities.First(ent => ent.LogicalName == entity.Records.EntityName);
-                        var rel = results.Settings.AllEntities
-                            .SelectMany(ent => ent.ManyToManyRelationships)
-                            .First(r => r.IntersectEntityName == emd.LogicalName);
-
-                        var name = $"{results.Settings.AllEntities.First(ent => ent.LogicalName == rel.Entity1LogicalName).DisplayName?.UserLocalizedLabel?.Label} / {results.Settings.AllEntities.First(ent => ent.LogicalName == rel.Entity2LogicalName).DisplayName?.UserLocalizedLabel?.Label}";
-
-                        var tabPage = new TabPage(name);
-                        tabs.Add(tabPage);
-
-                        var rl = new RecordsListerControl(entity.Records.Entities.ToList(), results.Entities.SelectMany(rs => rs.Records.Entities).ToList(), rel, results.Settings.AllEntities)
-                        {
-                            Dock = DockStyle.Fill
-                        };
-
-                        tabPage.Controls.Add(rl);
-                    }
-
-                    tabCtrl.TabPages.AddRange(tabs.OrderBy(t => t.Text).ToArray());
-                    cbbTabSelection.Items.AddRange(tabs.OrderBy(t => t.Text).Select(t => t.Text).Cast<object>().ToArray());
-
-                    if (cbbTabSelection.Items.Count > 0)
-                    {
-                        cbbTabSelection.SelectedIndex = 0;
-                    }
-
-                    tabCtrl.SelectedIndexChanged += tabCtrl_SelectedIndexChanged;
-                    cbbTabSelection.SelectedIndexChanged += cbbTabSelection_SelectedIndexChanged;
-                },
-                ProgressChanged = evt =>
-                {
-                    SetWorkingMessage(evt.UserState.ToString());
-                    SendMessageToStatusBar?.Invoke(this, new StatusBarMessageEventArgs(evt.UserState.ToString()));
+                    serializer.WriteObject(w, list);
                 }
-            });
-        }
 
-        #endregion Events
-
-        #region Methods
-
-        public void LoadItems()
-        {
-            WorkAsync(new WorkAsyncInfo
-            {
-                Message = "Loading entities...",
-                Work = (bw, evt) =>
-                {
-                    ecpEntities.LoadEntities(settings);
-                    emds = ecpEntities.Metadata;
-
-                    bw.ReportProgress(0, "Loading Web sites");
-
-                    evt.Result = Service.RetrieveMultiple(new QueryExpression("adx_website")
-                    {
-                        ColumnSet = new ColumnSet(true)
-                    }).Entities.Select(record => new Website(record)).ToList();
-                },
-                PostWorkCallBack = evt =>
-                {
-                    if (evt.Error != null)
-                    {
-                        MessageBox.Show(this, $@"An error occured: {evt.Error.Message}", @"Error", MessageBoxButtons.OK,
-                            MessageBoxIcon.Error);
-                        return;
-                    }
-
-                    ecpEntities.FillList();
-                    wpcWebsiteFilter.Websites = (List<Website>)evt.Result;
-
-                    tsbRetrieveRecords.Enabled = true;
-                    tsddSettings.Enabled = true;
-                },
-                ProgressChanged = evt =>
-                {
-                    SetWorkingMessage(evt.UserState.ToString());
-                    SendMessageToStatusBar?.Invoke(this, new StatusBarMessageEventArgs(evt.UserState.ToString()));
-                }
-            });
-        }
-
-        public override void UpdateConnection(IOrganizationService newService, ConnectionDetail detail, string actionName, object parameter)
-        {
-            ecpEntities.Service = newService;
-
-            nManager = new NoteManager(newService);
-            rManager = new RecordManager(newService);
-
-            base.UpdateConnection(newService, detail, actionName, parameter);
-        }
-
-        private void AddTile(string text, string description)
-        {
-            Invoke(new Action(() =>
-            {
-                var ctrl = new ProgressTile(text) { Dock = DockStyle.Left };
-                pnlProgressTiles.Controls.Add(ctrl);
-                pnlProgressTiles.Controls.SetChildIndex(ctrl, 0);
-
-                lblProgress.Text = description;
-            }));
-        }
-
-        private void CancelTile()
-        {
-            Invoke(new Action(() =>
-            {
-                pnlProgressTiles.Controls.OfType<ProgressTile>().FirstOrDefault()?.Cancel();
-            }));
-        }
-
-        private void CompleteTile()
-        {
-            Invoke(new Action(() =>
-            {
-                pnlProgressTiles.Controls.OfType<ProgressTile>().FirstOrDefault()?.Complete();
-            }));
-        }
-
-        private void ComputeSettings()
-        {
-            settings.CreateFilter = docCreateFilter.IsEnabled ? docCreateFilter.SelectedDate : (DateTime?)null;
-            settings.ModifyFilter = docModifyFilter.IsEnabled ? docModifyFilter.SelectedDate : (DateTime?)null;
-            settings.WebsiteFilter = wpcWebsiteFilter.IsEnabled ? wpcWebsiteFilter.SelectedWebSiteId : Guid.Empty;
-            settings.SelectedEntities = ecpEntities.SelectedMetadatas.Select(emd => emd.LogicalName).ToList();
-            settings.AllEntities = ecpEntities.Metadata;
-            settings.ActiveItemsOnly = chkActiveOnly.Checked;
-            settings.ExportInFolderStructure = cbExportAsFolderStructure.Checked;
-            settings.ZipFolderStructure = cbZipFolderStructure.Checked;
+                MessageBox.Show(this, $@"Records exported to {sfd.FileName}!", @"Success", MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+            }
         }
 
         private void Import()
@@ -589,9 +665,14 @@ namespace MscrmTools.PortalRecordsMover
                 return;
             }
 
-            btnCancel.Visible = true;
-
             EntityCollection ec = FileManager.GetRecordsFromDisk(txtImportFilePath.Text);
+
+            TransferData(ec, Service);
+        }
+
+        private void TransferData(EntityCollection ec, IOrganizationService service)
+        {
+            btnCancel.Visible = true;
 
             // References to websites
             var webSitesRefId = ec.Entities.SelectMany(e => e.Attributes)
@@ -609,7 +690,7 @@ namespace MscrmTools.PortalRecordsMover
             // to process, ask the user to map to the appropriate website
             if (!webSitesRefId.All(id => webSitesIds.Contains(id)))
             {
-                var targetWebSites = Service.RetrieveMultiple(new QueryExpression("adx_website")
+                var targetWebSites = service.RetrieveMultiple(new QueryExpression("adx_website")
                 {
                     ColumnSet = new ColumnSet("adx_name")
                 }).Entities;
@@ -676,7 +757,7 @@ namespace MscrmTools.PortalRecordsMover
                 {
                     AddTile("Retrieve metadata", "We need entities metadata to process your records");
 
-                    emds = MetadataManager.GetEntitiesList(Service);
+                    emds = MetadataManager.GetEntitiesList(service);
 
                     CompleteTile();
                 }
@@ -687,7 +768,7 @@ namespace MscrmTools.PortalRecordsMover
 
                     logger.LogInfo("Deactivating Webpage plugins steps");
 
-                    pManager = new PluginManager(Service);
+                    pManager = new PluginManager(service);
                     pManager.DeactivateWebpagePlugins();
 
                     CompleteTile();
@@ -713,7 +794,7 @@ namespace MscrmTools.PortalRecordsMover
 
                 AddTile("Process records", "Records are processed in three phases : one phase without lookup being populated. A second phase with lookup being populated. This ensure all relationships between records can be created on the second phase. And a third phase to deactivate records that need it.");
 
-                var rm = new RecordManager(Service);
+                var rm = new RecordManager(service);
                 evt.Cancel = rm.ProcessRecords((EntityCollection)evt.Argument, emds, ConnectionDetail.OrganizationMajorVersion, importWorker, iSettings);
 
                 if (evt.Cancel)
@@ -853,14 +934,5 @@ Please review the logs", @"Information", MessageBoxButtons.OK, MessageBoxIcon.Wa
         }
 
         #endregion Methods
-
-        private void cbExportAsFolderStructure_CheckedChanged(object sender, EventArgs e)
-        {
-            cbZipFolderStructure.Enabled = cbExportAsFolderStructure.Checked;
-            if (!cbZipFolderStructure.Enabled)
-            {
-                cbZipFolderStructure.Checked = false;
-            }
-        }
     }
 }
