@@ -62,16 +62,33 @@ namespace MscrmTools.PortalRecordsMover
 
         private void btnBrowseImportFile_Click(object sender, EventArgs e)
         {
-            var ifpd = new ImportPackageSelectionDialog();
-            if (ifpd.ShowDialog(this) == DialogResult.OK)
+            if (rdbSelectFile.Checked)
             {
-                btnImport.Enabled = true;
-                txtImportFilePath.Text = ifpd.Path;
+                var ofd = new OpenFileDialog
+                {
+                    Filter = @"XML or Zip File (*.xml,*.zip)|*.xml;*.zip",
+                    Title = @"Select the file containing portal records to import"
+                };
+
+                if (ofd.ShowDialog(this) == DialogResult.OK)
+                {
+                    txtImportFilePath.Text = ofd.FileName;
+                }
             }
-            else if (txtImportFilePath.Text.Length == 0)
+            else
             {
-                btnImport.Enabled = false;
+                var fbd = new FolderBrowserDialog
+                {
+                    Description = @"Folder with portal data to import"
+                };
+
+                if (fbd.ShowDialog(this) == DialogResult.OK)
+                {
+                    txtImportFilePath.Text = fbd.SelectedPath;
+                }
             }
+
+            btnImport.Enabled = txtImportFilePath.Text.Length > 0;
         }
 
         private void btnCancel_Click(object sender, EventArgs e)
@@ -387,6 +404,11 @@ Please remove this file from your Plugins folder", @"Warning", MessageBoxButtons
             AddAdditionalOrganization();
         }
 
+        private void txtImportFilePath_TextChanged(object sender, EventArgs e)
+        {
+            btnImport.Enabled = txtImportFilePath.Text.Length > 0;
+        }
+
         #endregion Events
 
         #region Methods
@@ -557,6 +579,7 @@ Please remove this file from your Plugins folder", @"Warning", MessageBoxButtons
 
             WorkAsync(new WorkAsyncInfo
             {
+                Message = "",
                 AsyncArgument = ec,
                 Work = (bw, evt) =>
                 {
@@ -565,12 +588,27 @@ Please remove this file from your Plugins folder", @"Warning", MessageBoxButtons
                     var webFiles = list.Entities.Where(ent => ent.LogicalName == "adx_webfile").ToList();
                     if (webFiles.Any())
                     {
-                        bw.ReportProgress(0, "Retrieving web files annotation records...");
+                        if (isFileExport)
+                        {
+                            bw.ReportProgress(0, "Retrieving web files annotation records...");
+                        }
+                        else
+                        {
+                            Invoke(new Action(() =>
+                            {
+                                pnlImportMain.Visible = true;
+                                pnlImport.BringToFront();
+                            }));
+                            AddTile("Retrieve notes", "We need to retrieve notes associated to the web files you want to transfer");
+                        }
+
                         var records = rManager.RetrieveWebfileAnnotations(webFiles.Select(w => w.Id).ToList());
                         foreach (var record in records)
                         {
                             ec.Entities.Insert(0, record);
                         }
+
+                        CompleteTile();
                     }
 
                     evt.Result = list;
@@ -581,6 +619,7 @@ Please remove this file from your Plugins folder", @"Warning", MessageBoxButtons
 
                     if (evt.Error != null)
                     {
+                        CancelTile();
                         MessageBox.Show(this, $@"An error occured: {evt.Error.Message}", @"Error", MessageBoxButtons.OK,
                             MessageBoxIcon.Error);
                         return;
@@ -700,8 +739,6 @@ Please remove this file from your Plugins folder", @"Warning", MessageBoxButtons
 
         private void TransferData(EntityCollection ec, IOrganizationService service)
         {
-            btnCancel.Visible = true;
-
             // References to websites
             var webSitesRefId = ec.Entities.SelectMany(e => e.Attributes)
                 .Where(a => a.Value is EntityReference reference && reference.LogicalName == "adx_website")
@@ -733,28 +770,28 @@ Please remove this file from your Plugins folder", @"Warning", MessageBoxButtons
                 }
             }
 
-            if (ec.Entities.Any(e => e.LogicalName == "adx_webpage"))
-            {
-                var message =
-                    "You are trying to import web pages. It is recommended to deactivate plugins steps related to this entity to ensure successful import. Do you want to deactivate these plugins ? \n\nNote: The plugins will be reactivated at the end of the import process";
-                iSettings.DeactivateWebPagePlugins = MessageBox.Show(this, message, @"Question", MessageBoxButtons.YesNo, MessageBoxIcon.Question) ==
-                    DialogResult.Yes;
-            }
-
-            if (ec.Entities.Any(e => e.LogicalName == "annotation" && (e.GetAttributeValue<string>("filename")?.ToLower().EndsWith(".js") ?? false)) && nManager.HasJsRestriction)
-            {
-                var message =
-                    "You are trying to import JavaScript note. It is recommended to remove JavaScript file type restriction to ensure successful import. Do you want to remove this restriction ? \n\nNote: The restriction will be added back at the end of the import process";
-                iSettings.RemoveJavaScriptFileRestriction = MessageBox.Show(this, message, @"Question", MessageBoxButtons.YesNo, MessageBoxIcon.Question) ==
-                                                     DialogResult.Yes;
-            }
-
-            if (ec.Entities.Any(e =>
+            var pluginCheck = ec.Entities.Any(e => e.LogicalName == "adx_webpage");
+            var javascriptCheck =
+                ec.Entities.Any(e =>
+                    e.LogicalName == "annotation" &&
+                    (e.GetAttributeValue<string>("filename")?.ToLower().EndsWith(".js") ?? false)) &&
+                nManager.HasJsRestriction;
+            var webFileCleaning = ec.Entities.Any(e =>
                 e.LogicalName == "annotation" &&
-                e.GetAttributeValue<EntityReference>("objectid")?.LogicalName == "adx_webfile"))
+                e.GetAttributeValue<EntityReference>("objectid")?.LogicalName == "adx_webfile");
+
+            if (pluginCheck || javascriptCheck)
             {
-                var message = "You are trying to import notes for web files. Do you want to clean target web files (ie. keep only annotation from source data and delete any other annotation from the web files referenced in source data?";
-                iSettings.CleanWebFiles = MessageBox.Show(this, message, @"Question", MessageBoxButtons.YesNo) == DialogResult.Yes;
+                var dialog = new PreImportWarningDialog(pluginCheck, javascriptCheck, webFileCleaning);
+                var result = dialog.ShowDialog(this);
+                if (result == DialogResult.Cancel)
+                {
+                    return;
+                }
+
+                iSettings.DeactivateWebPagePlugins = true;
+                iSettings.RemoveJavaScriptFileRestriction = true;
+                iSettings.CleanWebFiles = dialog.CleanWebFiles;
             }
 
             var lm = new LogManager(GetType());
@@ -767,6 +804,7 @@ Please remove this file from your Plugins folder", @"Warning", MessageBoxButtons
                 }
             }
 
+            btnCancel.Visible = true;
             btnImport.Enabled = false;
             pnlImportMain.Visible = true;
             pbImport.IsOnError = false;
@@ -869,12 +907,14 @@ Please remove this file from your Plugins folder", @"Warning", MessageBoxButtons
 
                 if (evt.Cancelled)
                 {
+                    CancelTile();
                     lblProgress.Text = @"Import was canceled!";
                     return;
                 }
 
                 if (evt.Error != null)
                 {
+                    CancelTile();
                     MessageBox.Show(this, $@"An error occured: {evt.Error.Message}", @"Error", MessageBoxButtons.OK,
                         MessageBoxIcon.Error);
                     return;

@@ -179,11 +179,11 @@
     <Compile Include="Controls\WebsitePickerControl.Designer.cs">
       <DependentUpon>WebsitePickerControl.cs</DependentUpon>
     </Compile>
-    <Compile Include="Forms\ImportPackageSelectionDialog.cs">
+    <Compile Include="Forms\PreImportWarningDialog.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Forms\ImportPackageSelectionDialog.Designer.cs">
-      <DependentUpon>ImportPackageSelectionDialog.cs</DependentUpon>
+    <Compile Include="Forms\PreImportWarningDialog.Designer.cs">
+      <DependentUpon>PreImportWarningDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="Forms\WebSiteMapper.cs">
       <SubType>Form</SubType>
@@ -229,8 +229,8 @@
     <EmbeddedResource Include="Controls\WebsitePickerControl.resx">
       <DependentUpon>WebsitePickerControl.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Forms\ImportPackageSelectionDialog.resx">
-      <DependentUpon>ImportPackageSelectionDialog.cs</DependentUpon>
+    <EmbeddedResource Include="Forms\PreImportWarningDialog.resx">
+      <DependentUpon>PreImportWarningDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\WebSiteMapper.resx">
       <DependentUpon>WebSiteMapper.cs</DependentUpon>

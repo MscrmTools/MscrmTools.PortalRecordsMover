@@ -78,11 +78,13 @@ namespace MscrmTools.PortalRecordsMover
             this.btnImport = new System.Windows.Forms.Button();
             this.btnImportClose = new System.Windows.Forms.Button();
             this.pnlImportFile = new System.Windows.Forms.Panel();
-            this.txtImportFilePath = new System.Windows.Forms.TextBox();
             this.btnBrowseImportFile = new System.Windows.Forms.Button();
             this.lblImportFileLabel = new System.Windows.Forms.Label();
             this.pnlImportHeader = new System.Windows.Forms.Panel();
             this.lblImportHeader = new System.Windows.Forms.Label();
+            this.rdbSelectFile = new System.Windows.Forms.RadioButton();
+            this.rdbSelectFolder = new System.Windows.Forms.RadioButton();
+            this.txtImportFilePath = new System.Windows.Forms.TextBox();
             this.tsMain.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.scRight)).BeginInit();
             this.scRight.Panel1.SuspendLayout();
@@ -604,6 +606,8 @@ namespace MscrmTools.PortalRecordsMover
             // pnlImportFile
             // 
             this.pnlImportFile.Controls.Add(this.txtImportFilePath);
+            this.pnlImportFile.Controls.Add(this.rdbSelectFile);
+            this.pnlImportFile.Controls.Add(this.rdbSelectFolder);
             this.pnlImportFile.Controls.Add(this.btnBrowseImportFile);
             this.pnlImportFile.Controls.Add(this.lblImportFileLabel);
             this.pnlImportFile.Dock = System.Windows.Forms.DockStyle.Top;
@@ -613,15 +617,6 @@ namespace MscrmTools.PortalRecordsMover
             this.pnlImportFile.Padding = new System.Windows.Forms.Padding(22, 0, 22, 0);
             this.pnlImportFile.Size = new System.Drawing.Size(1330, 44);
             this.pnlImportFile.TabIndex = 3;
-            // 
-            // txtImportFilePath
-            // 
-            this.txtImportFilePath.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.txtImportFilePath.Location = new System.Drawing.Point(127, 0);
-            this.txtImportFilePath.Margin = new System.Windows.Forms.Padding(6);
-            this.txtImportFilePath.Name = "txtImportFilePath";
-            this.txtImportFilePath.Size = new System.Drawing.Size(1031, 31);
-            this.txtImportFilePath.TabIndex = 2;
             // 
             // btnBrowseImportFile
             // 
@@ -667,6 +662,40 @@ namespace MscrmTools.PortalRecordsMover
             this.lblImportHeader.Size = new System.Drawing.Size(418, 59);
             this.lblImportHeader.TabIndex = 0;
             this.lblImportHeader.Text = "Portal Records Import";
+            // 
+            // rdbSelectFile
+            // 
+            this.rdbSelectFile.AutoSize = true;
+            this.rdbSelectFile.Checked = true;
+            this.rdbSelectFile.Dock = System.Windows.Forms.DockStyle.Right;
+            this.rdbSelectFile.Location = new System.Drawing.Point(849, 0);
+            this.rdbSelectFile.Name = "rdbSelectFile";
+            this.rdbSelectFile.Size = new System.Drawing.Size(205, 44);
+            this.rdbSelectFile.TabIndex = 3;
+            this.rdbSelectFile.TabStop = true;
+            this.rdbSelectFile.Text = "File (XML or ZIP)";
+            this.rdbSelectFile.UseVisualStyleBackColor = true;
+            // 
+            // rdbSelectFolder
+            // 
+            this.rdbSelectFolder.AutoSize = true;
+            this.rdbSelectFolder.Dock = System.Windows.Forms.DockStyle.Right;
+            this.rdbSelectFolder.Location = new System.Drawing.Point(1054, 0);
+            this.rdbSelectFolder.Name = "rdbSelectFolder";
+            this.rdbSelectFolder.Size = new System.Drawing.Size(104, 44);
+            this.rdbSelectFolder.TabIndex = 4;
+            this.rdbSelectFolder.Text = "Folder";
+            this.rdbSelectFolder.UseVisualStyleBackColor = true;
+            // 
+            // txtImportFilePath
+            // 
+            this.txtImportFilePath.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.txtImportFilePath.Location = new System.Drawing.Point(127, 0);
+            this.txtImportFilePath.Margin = new System.Windows.Forms.Padding(6);
+            this.txtImportFilePath.Name = "txtImportFilePath";
+            this.txtImportFilePath.Size = new System.Drawing.Size(722, 31);
+            this.txtImportFilePath.TabIndex = 5;
+            this.txtImportFilePath.TextChanged += new System.EventHandler(this.txtImportFilePath_TextChanged);
             // 
             // MyPluginControl
             // 
@@ -722,7 +751,6 @@ namespace MscrmTools.PortalRecordsMover
         private Controls.WebsitePickerControl wpcWebsiteFilter;
         private Controls.DateOptionControl docModifyFilter;
         private System.Windows.Forms.Panel pnlImportFile;
-        private System.Windows.Forms.TextBox txtImportFilePath;
         private System.Windows.Forms.Button btnBrowseImportFile;
         private System.Windows.Forms.Label lblImportFileLabel;
         private System.Windows.Forms.Panel pnlImportHeader;
@@ -758,5 +786,8 @@ namespace MscrmTools.PortalRecordsMover
         private System.Windows.Forms.Panel pnlProgressTiles;
         private System.Windows.Forms.ToolStripSplitButton tssbTransferData;
         private System.Windows.Forms.ToolStripMenuItem tsmiTansferToNewOrg;
+        private System.Windows.Forms.TextBox txtImportFilePath;
+        private System.Windows.Forms.RadioButton rdbSelectFile;
+        private System.Windows.Forms.RadioButton rdbSelectFolder;
     }
 }
