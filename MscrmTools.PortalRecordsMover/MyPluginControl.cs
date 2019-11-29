@@ -1,5 +1,6 @@
 ﻿using McTools.Xrm.Connection;
 using Microsoft.Xrm.Sdk;
+using Microsoft.Xrm.Sdk.Client;
 using Microsoft.Xrm.Sdk.Metadata;
 using Microsoft.Xrm.Sdk.Query;
 using MscrmTools.PortalRecordsMover.AppCode;
@@ -177,21 +178,20 @@ namespace MscrmTools.PortalRecordsMover
         {
             try
             {
-                var noteType = (from assembly in AppDomain.CurrentDomain.GetAssemblies()
-                                from type in assembly.GetTypes()
-                                where type.Name == "Annotation"
-                                      && type.BaseType?.Name == "Entity"
-                                select type).FirstOrDefault();
-                if (noteType != null)
+                var assemblies = (from a in AppDomain.CurrentDomain.GetAssemblies()
+                                  where a.CustomAttributes.Any(ca => ca.AttributeType == typeof(ProxyTypesAssemblyAttribute))
+                                      && !a.GetName().Name.StartsWith("Microsoft.")
+                                  select a).ToList();
+                if (assemblies.Count > 0)
                 {
                     MessageBox.Show(this,
-                        $@"Invalid file detected!
+                        $@"Potential conflict detected!
 
-{noteType.Module}
+The following files are not respecting XrmToolBox best practices and might prevent this tool from transfering records correctly:
 
-This file is not respecting XrmToolBox best practices and might prevent this tool from transfering Annotations.
+{string.Join(Environment.NewLine, assemblies.Select(a => "- " + a.GetName().Name))}
 
-Please remove this file from your Plugins folder", @"Warning", MessageBoxButtons.OK,
+If you experience issue when transfering some records, especially annotations, please try to remove the corresponding tools from XrmToolBox", @"Warning", MessageBoxButtons.OK,
                         MessageBoxIcon.Warning);
                 }
             }
