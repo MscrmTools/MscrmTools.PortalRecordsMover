@@ -88,6 +88,8 @@ namespace MscrmTools.PortalRecordsMover.AppCode
                             .Contains(guid)
                         ))
                     {
+                        nextCycle.Add(record);
+                        records.RemoveAt(i);
                         continue;
                     }
                 }
@@ -121,112 +123,80 @@ namespace MscrmTools.PortalRecordsMover.AppCode
                 {
                     record.Attributes.Remove("ownerid");
 
-                    if (record.Attributes.Count == 3 && record.Attributes.Values.All(v => v is Guid))
+                    if (record.Attributes.Contains("statecode") &&
+                       record.GetAttributeValue<OptionSetValue>("statecode").Value == 1)
                     {
-                        try
+                        logger.LogInfo($"Record {record.GetAttributeValue<string>(entityProgress.Metadata.PrimaryNameAttribute)} is inactive : Added for deactivation step");
+
+                        recordsToDeactivate.Add(record.ToEntityReference());
+                        record.Attributes.Remove("statecode");
+                        record.Attributes.Remove("statuscode");
+                    }
+
+                    if (organizationMajorVersion >= 8)
+                    {
+                        var result = (UpsertResponse)service.Execute(new UpsertRequest
                         {
-                            var rel =
-                                emds.SelectMany(e => e.ManyToManyRelationships)
-                                    .First(r => r.IntersectEntityName == record.LogicalName);
+                            Target = record
+                        });
 
-                            service.Associate(rel.Entity1LogicalName,
-                                record.GetAttributeValue<Guid>(rel.Entity1IntersectAttribute),
-                                new Relationship(rel.SchemaName),
-                                new EntityReferenceCollection(new List<EntityReference>
-                                {
-                                        new EntityReference(rel.Entity2LogicalName,
-                                            record.GetAttributeValue<Guid>(rel.Entity2IntersectAttribute))
-                                }));
-
-                            logger.LogInfo($"Association {entityProgress.Entity} ({record.Id}) created");
-                        }
-                        catch (FaultException<OrganizationServiceFault> error)
-                        {
-                            if (error.Detail.ErrorCode != -2147220937)
-                            {
-                                throw;
-                            }
-
-                            logger.LogInfo($"Association {entityProgress.Entity} ({record.Id}) already exists");
-                        }
+                        logger.LogInfo(
+                            $"Record {record.GetAttributeValue<string>(entityProgress.Metadata.PrimaryNameAttribute)} {(result.RecordCreated ? "created" : "updated")} ({entityProgress.Entity}/{record.Id})");
                     }
                     else
                     {
-                        if (record.Attributes.Contains("statecode") &&
-                           record.GetAttributeValue<OptionSetValue>("statecode").Value == 1)
+                        bool exists = false;
+                        try
                         {
-                            logger.LogInfo($"Record {record.GetAttributeValue<string>(entityProgress.Metadata.PrimaryNameAttribute)} is inactive : Added for deactivation step");
-
-                            recordsToDeactivate.Add(record.ToEntityReference());
-                            record.Attributes.Remove("statecode");
-                            record.Attributes.Remove("statuscode");
+                            service.Retrieve(record.LogicalName, record.Id, new ColumnSet());
+                            exists = true;
+                        }
+                        catch
+                        {
+                            // Do nothing
                         }
 
-                        if (organizationMajorVersion >= 8)
+                        if (exists)
                         {
-                            var result = (UpsertResponse)service.Execute(new UpsertRequest
-                            {
-                                Target = record
-                            });
-
+                            service.Update(record);
                             logger.LogInfo(
-                                $"Record {record.GetAttributeValue<string>(entityProgress.Metadata.PrimaryNameAttribute)} {(result.RecordCreated ? "created" : "updated")} ({entityProgress.Entity}/{record.Id})");
+                                $"Record {record.GetAttributeValue<string>(entityProgress.Metadata.PrimaryNameAttribute)} updated ({entityProgress.Entity}/{record.Id})");
                         }
                         else
                         {
-                            bool exists = false;
-                            try
-                            {
-                                service.Retrieve(record.LogicalName, record.Id, new ColumnSet());
-                                exists = true;
-                            }
-                            catch
-                            {
-                                // Do nothing
-                            }
-
-                            if (exists)
-                            {
-                                service.Update(record);
-                                logger.LogInfo(
-                                    $"Record {record.GetAttributeValue<string>(entityProgress.Metadata.PrimaryNameAttribute)} updated ({entityProgress.Entity}/{record.Id})");
-                            }
-                            else
-                            {
-                                service.Create(record);
-                                logger.LogInfo(
-                                    $"Record {record.GetAttributeValue<string>(entityProgress.Metadata.PrimaryNameAttribute)} created ({entityProgress.Entity}/{record.Id})");
-                            }
+                            service.Create(record);
+                            logger.LogInfo(
+                                $"Record {record.GetAttributeValue<string>(entityProgress.Metadata.PrimaryNameAttribute)} created ({entityProgress.Entity}/{record.Id})");
                         }
+                    }
 
-                        if (record.LogicalName == "annotation" && settings.CleanWebFiles)
+                    if (record.LogicalName == "annotation" && settings.CleanWebFiles)
+                    {
+                        var reference = record.GetAttributeValue<EntityReference>("objectid");
+                        if (reference?.LogicalName == "adx_webfile")
                         {
-                            var reference = record.GetAttributeValue<EntityReference>("objectid");
-                            if (reference?.LogicalName == "adx_webfile")
-                            {
-                                logger.LogInfo("Searching for extra annotation in web file {0:B}", reference.Id);
+                            logger.LogInfo("Searching for extra annotation in web file {0:B}", reference.Id);
 
-                                var qe = new QueryExpression("annotation")
+                            var qe = new QueryExpression("annotation")
+                            {
+                                NoLock = true,
+                                Criteria = new FilterExpression
                                 {
-                                    NoLock = true,
-                                    Criteria = new FilterExpression
-                                    {
-                                        Conditions =
+                                    Conditions =
                                             {
                                                 new ConditionExpression("annotationid", ConditionOperator.NotEqual,
                                                     record.Id),
                                                 new ConditionExpression("objectid", ConditionOperator.Equal,
                                                     reference.Id),
                                             }
-                                    }
-                                };
-
-                                var extraNotes = service.RetrieveMultiple(qe);
-                                foreach (var extraNote in extraNotes.Entities)
-                                {
-                                    logger.LogInfo("Deleting extra note {0:B}", extraNote.Id);
-                                    service.Delete(extraNote.LogicalName, extraNote.Id);
                                 }
+                            };
+
+                            var extraNotes = service.RetrieveMultiple(qe);
+                            foreach (var extraNote in extraNotes.Entities)
+                            {
+                                logger.LogInfo("Deleting extra note {0:B}", extraNote.Id);
+                                service.Delete(extraNote.LogicalName, extraNote.Id);
                             }
                         }
                     }
@@ -246,14 +216,38 @@ namespace MscrmTools.PortalRecordsMover.AppCode
                 }
             }
 
-            worker.ReportProgress(0, "Updating records to add references...");
+            worker.ReportProgress(0, @"Updating records to add references and processing many-to-many relationships...");
 
             var count = nextCycle.DistinctBy(r => r.Id).Count();
             var index = 0;
 
             foreach (var record in nextCycle.DistinctBy(r => r.Id))
             {
-                var entityProgress = progress.Entities.First(e => e.LogicalName == record.LogicalName);
+                var entityProgress = progress.Entities.FirstOrDefault(e => e.LogicalName == record.LogicalName);
+                if (entityProgress == null)
+                {
+                    var emd = emds.First(e => e.LogicalName == record.LogicalName);
+                    string displayName = emd.DisplayName?.UserLocalizedLabel?.Label;
+
+                    if (displayName == null && emd.IsIntersect.Value)
+                    {
+                        var rel = emds.SelectMany(ent => ent.ManyToManyRelationships)
+                            .First(r => r.IntersectEntityName == emd.LogicalName);
+
+                        displayName = $"{emds.First(ent => ent.LogicalName == rel.Entity1LogicalName).DisplayName?.UserLocalizedLabel?.Label} / {emds.First(ent => ent.LogicalName == rel.Entity2LogicalName).DisplayName?.UserLocalizedLabel?.Label}";
+                    }
+                    if (displayName == null)
+                    {
+                        displayName = emd.SchemaName;
+                    }
+
+                    entityProgress = new EntityProgress(emd, displayName)
+                    {
+                        Count = nextCycle.Count(r => r.LogicalName == record.LogicalName)
+                    };
+                    progress.Entities.Add(entityProgress);
+                }
+
                 if (!entityProgress.SuccessSecondPhase.HasValue)
                 {
                     entityProgress.SuccessSecondPhase = 0;
@@ -264,10 +258,48 @@ namespace MscrmTools.PortalRecordsMover.AppCode
                 {
                     index++;
 
-                    logger.LogInfo($"Upating record {record.LogicalName} ({record.Id})");
-
                     record.Attributes.Remove("ownerid");
-                    service.Update(record);
+
+                    if (record.Attributes.Count == 3 && record.Attributes.Values.All(v => v is Guid))
+                    {
+                        logger.LogInfo($"Creating association {entityProgress.Entity} ({record.Id})");
+
+                        try
+                        {
+                            var rel =
+                                emds.SelectMany(e => e.ManyToManyRelationships)
+                                    .First(r => r.IntersectEntityName == record.LogicalName);
+
+                            service.Associate(rel.Entity1LogicalName,
+                                record.GetAttributeValue<Guid>(rel.Entity1IntersectAttribute),
+                                new Relationship(rel.SchemaName),
+                                new EntityReferenceCollection(new List<EntityReference>
+                                {
+                                    new EntityReference(rel.Entity2LogicalName,
+                                        record.GetAttributeValue<Guid>(rel.Entity2IntersectAttribute))
+                                }));
+
+                            logger.LogInfo($"Association {entityProgress.Entity} ({record.Id}) created");
+                        }
+                        catch (FaultException<OrganizationServiceFault> error)
+                        {
+                            if (error.Detail.ErrorCode != -2147220937)
+                            {
+                                throw;
+                            }
+
+                            logger.LogInfo($"Association {entityProgress.Entity} ({record.Id}) already exists");
+                        }
+                        finally
+                        {
+                            entityProgress.Processed++;
+                        }
+                    }
+                    else
+                    {
+                        logger.LogInfo($"Upating record {record.LogicalName} ({record.Id})");
+                        service.Update(record);
+                    }
 
                     var percentage = index * 100 / count;
 
