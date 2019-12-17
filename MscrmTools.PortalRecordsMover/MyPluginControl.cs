@@ -897,10 +897,7 @@ If you experience issue when transfering some records, especially annotations, p
             };
             worker.RunWorkerCompleted += (s, evt) =>
             {
-                SendMessageToStatusBar?.Invoke(this, new StatusBarMessageEventArgs(string.Empty));
-                lblProgress.Text = @"Records imported!";
                 llOpenLogFile.Visible = true;
-
                 btnImportClose.Enabled = true;
                 btnImport.Enabled = true;
                 btnCancel.Visible = false;
@@ -915,10 +912,16 @@ If you experience issue when transfering some records, especially annotations, p
                 if (evt.Error != null)
                 {
                     CancelTile();
+
+                    logger.LogError(evt.Error.ToString());
+
                     MessageBox.Show(this, $@"An error occured: {evt.Error.Message}", @"Error", MessageBoxButtons.OK,
                         MessageBoxIcon.Error);
                     return;
                 }
+
+                SendMessageToStatusBar?.Invoke(this, new StatusBarMessageEventArgs(string.Empty));
+                lblProgress.Text = @"Records imported!";
 
                 if (pbImport.IsOnError)
                 {
@@ -936,6 +939,8 @@ Please review the logs", @"Information", MessageBoxButtons.OK, MessageBoxIcon.Wa
                 if (evt.UserState is string)
                 {
                     lblProgress.Text = evt.UserState.ToString();
+                    logger.LogInfo(evt.UserState.ToString());
+
                     SendMessageToStatusBar?.Invoke(this, new StatusBarMessageEventArgs(evt.UserState.ToString()));
                 }
                 else

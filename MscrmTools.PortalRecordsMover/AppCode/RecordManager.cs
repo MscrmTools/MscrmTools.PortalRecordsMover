@@ -119,6 +119,10 @@ namespace MscrmTools.PortalRecordsMover.AppCode
                     progress.Entities.Add(entityProgress);
                 }
 
+                var name = string.IsNullOrEmpty(entityProgress.Metadata.PrimaryNameAttribute)
+                    ? "(N/A)"
+                    : record.GetAttributeValue<string>(entityProgress.Metadata.PrimaryNameAttribute);
+
                 try
                 {
                     record.Attributes.Remove("ownerid");
@@ -126,7 +130,7 @@ namespace MscrmTools.PortalRecordsMover.AppCode
                     if (record.Attributes.Contains("statecode") &&
                        record.GetAttributeValue<OptionSetValue>("statecode").Value == 1)
                     {
-                        logger.LogInfo($"Record {record.GetAttributeValue<string>(entityProgress.Metadata.PrimaryNameAttribute)} is inactive : Added for deactivation step");
+                        logger.LogInfo($"Record {name} ({record.Id}) is inactive : Added for deactivation step");
 
                         recordsToDeactivate.Add(record.ToEntityReference());
                         record.Attributes.Remove("statecode");
@@ -141,7 +145,7 @@ namespace MscrmTools.PortalRecordsMover.AppCode
                         });
 
                         logger.LogInfo(
-                            $"Record {record.GetAttributeValue<string>(entityProgress.Metadata.PrimaryNameAttribute)} {(result.RecordCreated ? "created" : "updated")} ({entityProgress.Entity}/{record.Id})");
+                            $"Record {name} ({record.Id}) {(result.RecordCreated ? "created" : "updated")} ({entityProgress.Entity}/{record.Id})");
                     }
                     else
                     {
@@ -160,13 +164,13 @@ namespace MscrmTools.PortalRecordsMover.AppCode
                         {
                             service.Update(record);
                             logger.LogInfo(
-                                $"Record {record.GetAttributeValue<string>(entityProgress.Metadata.PrimaryNameAttribute)} updated ({entityProgress.Entity}/{record.Id})");
+                                $"Record {name} ({record.Id}) updated ({entityProgress.Entity}/{record.Id})");
                         }
                         else
                         {
                             service.Create(record);
                             logger.LogInfo(
-                                $"Record {record.GetAttributeValue<string>(entityProgress.Metadata.PrimaryNameAttribute)} created ({entityProgress.Entity}/{record.Id})");
+                                $"Record {name} ({record.Id}) created ({entityProgress.Entity}/{record.Id})");
                         }
                     }
 
@@ -206,7 +210,7 @@ namespace MscrmTools.PortalRecordsMover.AppCode
                 }
                 catch (Exception error)
                 {
-                    logger.LogError($"{record.GetAttributeValue<string>(entityProgress.Metadata.PrimaryNameAttribute)} ({entityProgress.Entity}/{record.Id}): {error.Message}");
+                    logger.LogError($"{name} ({entityProgress.Entity}/{record.Id}): {error.Message}");
                     entityProgress.ErrorFirstPhase++;
                 }
                 finally
