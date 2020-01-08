@@ -19,6 +19,7 @@ using System.Runtime.Serialization;
 using System.Threading;
 using System.Windows.Forms;
 using System.Xml;
+using System.Xml.Linq;
 using XrmToolBox.Extensibility;
 using XrmToolBox.Extensibility.Args;
 using XrmToolBox.Extensibility.Interfaces;
@@ -166,6 +167,7 @@ namespace MscrmTools.PortalRecordsMover
                     ecpEntities.SelectItems(settings.SelectedEntities);
                     cbExportAsFolderStructure.Checked = settings.ExportInFolderStructure;
                     cbZipFolderStructure.Checked = settings.ZipFolderStructure;
+                    cbRemoveFormattedValues.Checked = settings.RemoveFormattedValues;
                 }
                 catch (Exception error)
                 {
@@ -503,6 +505,35 @@ If you experience issue when transfering some records, especially annotations, p
             }));
         }
 
+        private void CleanAndOrderXml(string filePath)
+        {
+            var xDoc = XDocument.Load(filePath);
+            if (xDoc.Root == null) return;
+
+            XNamespace ns = xDoc.Root.GetDefaultNamespace();
+
+            // Order attributes
+            var attributesNode = xDoc.Root.Element(ns + "Attributes");
+            if (attributesNode != null)
+            {
+                var kvps = attributesNode
+                    .Elements()
+                    .OrderBy(s => ((XElement)s.FirstNode).Value)
+                    .ToList();
+
+                attributesNode.RemoveNodes();
+                attributesNode.Add(kvps);
+            }
+
+            if (settings.RemoveFormattedValues)
+            {
+                var formattedValues = xDoc.Root.Element(ns + "FormattedValues");
+                formattedValues?.Remove();
+            }
+
+            xDoc.Save(filePath);
+        }
+
         private void CompleteTile()
         {
             Invoke(new Action(() =>
@@ -521,6 +552,7 @@ If you experience issue when transfering some records, especially annotations, p
             settings.ActiveItemsOnly = chkActiveOnly.Checked;
             settings.ExportInFolderStructure = cbExportAsFolderStructure.Checked;
             settings.ZipFolderStructure = cbZipFolderStructure.Checked;
+            settings.RemoveFormattedValues = cbRemoveFormattedValues.Checked;
         }
 
         private void ExportData(bool isFileExport)
@@ -676,6 +708,8 @@ If you experience issue when transfering some records, especially annotations, p
                         {
                             serializer.WriteObject(w, record);
                         }
+
+                        CleanAndOrderXml(filePath);
                     }
                 }
 
