@@ -100,7 +100,7 @@ namespace MscrmTools.PortalRecordsMover.AppCode
                     var emd = emds.FirstOrDefault(e => e.LogicalName == record.LogicalName);
                     if (emd == null)
                     {
-                        logger.LogInfo($"Record: Entity Logical Name: {record.LogicalName} for ID: {record.Id} not found in the target instance metadata.");
+                        logger.LogError($"Record: Entity Logical Name: {record.LogicalName} for ID: {record.Id} not found in the target instance metadata.");
                         continue;
                     }
 
