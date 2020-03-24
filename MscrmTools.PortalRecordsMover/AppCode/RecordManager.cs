@@ -97,7 +97,13 @@ namespace MscrmTools.PortalRecordsMover.AppCode
                 var entityProgress = progress.Entities.FirstOrDefault(e => e.LogicalName == record.LogicalName);
                 if (entityProgress == null)
                 {
-                    var emd = emds.First(e => e.LogicalName == record.LogicalName);
+                    var emd = emds.FirstOrDefault(e => e.LogicalName == record.LogicalName);
+                    if (emd == null)
+                    {
+                        logger.LogError($"Record: Entity Logical Name: {record.LogicalName} for ID: {record.Id} not found in the target instance metadata.");
+                        continue;
+                    }
+
                     string displayName = emd.DisplayName?.UserLocalizedLabel?.Label;
 
                     if (displayName == null && emd.IsIntersect.Value)
