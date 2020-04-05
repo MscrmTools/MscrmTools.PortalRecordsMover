@@ -48,6 +48,7 @@ namespace MscrmTools.PortalRecordsMover
             this.saveSettingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.scRight = new System.Windows.Forms.SplitContainer();
             this.gbOptions = new System.Windows.Forms.GroupBox();
+            this.cbRemoveFormattedValues = new System.Windows.Forms.CheckBox();
             this.cbZipFolderStructure = new System.Windows.Forms.CheckBox();
             this.cbExportAsFolderStructure = new System.Windows.Forms.CheckBox();
             this.chkActiveOnly = new System.Windows.Forms.CheckBox();
@@ -85,7 +86,6 @@ namespace MscrmTools.PortalRecordsMover
             this.lblImportFileLabel = new System.Windows.Forms.Label();
             this.pnlImportHeader = new System.Windows.Forms.Panel();
             this.lblImportHeader = new System.Windows.Forms.Label();
-            this.cbRemoveFormattedValues = new System.Windows.Forms.CheckBox();
             this.tsMain.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.scRight)).BeginInit();
             this.scRight.Panel1.SuspendLayout();
@@ -159,6 +159,7 @@ namespace MscrmTools.PortalRecordsMover
             // 
             // tsMain
             // 
+            this.tsMain.ImageScalingSize = new System.Drawing.Size(32, 32);
             this.tsMain.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.tsbClose,
             this.toolStripSeparator3,
@@ -284,6 +285,17 @@ namespace MscrmTools.PortalRecordsMover
             this.gbOptions.TabIndex = 0;
             this.gbOptions.TabStop = false;
             this.gbOptions.Text = "Options";
+            // 
+            // cbRemoveFormattedValues
+            // 
+            this.cbRemoveFormattedValues.AutoSize = true;
+            this.cbRemoveFormattedValues.Location = new System.Drawing.Point(614, 301);
+            this.cbRemoveFormattedValues.Margin = new System.Windows.Forms.Padding(4);
+            this.cbRemoveFormattedValues.Name = "cbRemoveFormattedValues";
+            this.cbRemoveFormattedValues.Size = new System.Drawing.Size(471, 29);
+            this.cbRemoveFormattedValues.TabIndex = 6;
+            this.cbRemoveFormattedValues.Text = "Remove formatted values from exported files";
+            this.cbRemoveFormattedValues.UseVisualStyleBackColor = true;
             // 
             // cbZipFolderStructure
             // 
@@ -698,17 +710,6 @@ namespace MscrmTools.PortalRecordsMover
             this.lblImportHeader.Size = new System.Drawing.Size(418, 59);
             this.lblImportHeader.TabIndex = 0;
             this.lblImportHeader.Text = "Portal Records Import";
-            // 
-            // cbRemoveFormattedValues
-            // 
-            this.cbRemoveFormattedValues.AutoSize = true;
-            this.cbRemoveFormattedValues.Location = new System.Drawing.Point(614, 301);
-            this.cbRemoveFormattedValues.Margin = new System.Windows.Forms.Padding(4);
-            this.cbRemoveFormattedValues.Name = "cbRemoveFormattedValues";
-            this.cbRemoveFormattedValues.Size = new System.Drawing.Size(471, 29);
-            this.cbRemoveFormattedValues.TabIndex = 6;
-            this.cbRemoveFormattedValues.Text = "Remove formatted values from exported files";
-            this.cbRemoveFormattedValues.UseVisualStyleBackColor = true;
             // 
             // MyPluginControl
             // 

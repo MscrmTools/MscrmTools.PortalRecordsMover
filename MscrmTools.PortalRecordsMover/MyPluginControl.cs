@@ -844,6 +844,8 @@ If you experience issue when transfering some records, especially annotations, p
             pbImport.IsOnError = false;
             lvProgress.Items.Clear();
 
+            pnlProgressTiles.Controls.Clear();
+
             var worker = new BackgroundWorker
             {
                 WorkerReportsProgress = true,
