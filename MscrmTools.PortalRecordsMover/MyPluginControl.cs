@@ -16,6 +16,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.ServiceModel;
 using System.Threading;
 using System.Windows.Forms;
 using System.Xml;
@@ -283,6 +284,8 @@ If you experience issue when transfering some records, especially annotations, p
 
                     bw.ReportProgress(0, "Retrieving selected entities views layout...");
 
+                    // Force service to source Service before retrieving data
+                    rManager.SetService(Service);
                     results.Views = rManager.RetrieveViews(exSettings.Entities);
 
                     foreach (var entity in exSettings.Entities)
@@ -457,10 +460,14 @@ If you experience issue when transfering some records, especially annotations, p
 
         public override void UpdateConnection(IOrganizationService newService, ConnectionDetail detail, string actionName, object parameter)
         {
-            ecpEntities.Service = newService;
+            if (actionName != "AdditionalOrganization")
+            {
+                // Entity Picker is only used for source organization
+                ecpEntities.Service = newService;
+            }
 
-            nManager = new NoteManager(newService);
-            rManager = new RecordManager(newService);
+            nManager = nManager ?? new NoteManager(newService);
+            rManager = rManager ?? new RecordManager(newService);
 
             base.UpdateConnection(newService, detail, actionName, parameter);
         }
@@ -609,6 +616,8 @@ If you experience issue when transfering some records, especially annotations, p
                 }
             }
 
+            pnlProgressTiles.Controls.Clear();
+
             WorkAsync(new WorkAsyncInfo
             {
                 Message = "",
@@ -634,6 +643,8 @@ If you experience issue when transfering some records, especially annotations, p
                             AddTile("Retrieve notes", "We need to retrieve notes associated to the web files you want to transfer");
                         }
 
+                        // Force service to source Service before retrieving data
+                        rManager.SetService(Service);
                         var records = rManager.RetrieveWebfileAnnotations(webFiles.Select(w => w.Id).ToList());
                         foreach (var record in records)
                         {
@@ -768,6 +779,8 @@ If you experience issue when transfering some records, especially annotations, p
 
             EntityCollection ec = FileManager.GetRecordsFromDisk(txtImportFilePath.Text);
 
+            pnlProgressTiles.Controls.Clear();
+
             TransferData(ec, Service);
         }
 
@@ -789,18 +802,39 @@ If you experience issue when transfering some records, especially annotations, p
             // to process, ask the user to map to the appropriate website
             if (!webSitesRefId.All(id => webSitesIds.Contains(id)))
             {
-                var targetWebSites = service.RetrieveMultiple(new QueryExpression("adx_website")
+                try
                 {
-                    ColumnSet = new ColumnSet("adx_name")
-                }).Entities;
-
-                if (!webSitesRefId.All(id => targetWebSites.Select(w => w.Id).Contains(id)))
-                {
-                    var wsmDialog = new WebSiteMapper(ec, targetWebSites.Select(t => new Website(t)).ToList());
-                    if (wsmDialog.ShowDialog() == DialogResult.Cancel)
+                    var targetWebSites = service.RetrieveMultiple(new QueryExpression("adx_website")
                     {
-                        return;
+                        ColumnSet = new ColumnSet("adx_name")
+                    }).Entities;
+
+                    if (!webSitesRefId.All(id => targetWebSites.Select(w => w.Id).Contains(id)))
+                    {
+                        var wsmDialog = new WebSiteMapper(ec, targetWebSites.Select(t => new Website(t)).ToList());
+                        if (wsmDialog.ShowDialog() == DialogResult.Cancel)
+                        {
+                            return;
+                        }
                     }
+                }
+                catch (FaultException<OrganizationServiceFault> error)
+                {
+                    if (error.Detail.ErrorCode == -2147217150)
+                    {
+                        MessageBox.Show(this,
+                            @"The target environment does not seem to have Portals solutions installed!",
+                            @"Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                    else
+                    {
+                        MessageBox.Show(this,
+                            $@"An unknown error occured when searching for websites: {error.Detail.Message}",
+                            @"Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                    pnlImport.SendToBack();
+                    tsMain.Enabled = true;
+                    return;
                 }
             }
 
@@ -843,8 +877,6 @@ If you experience issue when transfering some records, especially annotations, p
             pnlImportMain.Visible = true;
             pbImport.IsOnError = false;
             lvProgress.Items.Clear();
-
-            pnlProgressTiles.Controls.Clear();
 
             var worker = new BackgroundWorker
             {

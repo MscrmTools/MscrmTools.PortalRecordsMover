@@ -17,7 +17,7 @@ namespace MscrmTools.PortalRecordsMover.AppCode
         private const int maxErrorLoopCount = 5;
         private readonly LogManager logger;
         private readonly List<EntityReference> recordsToDeactivate;
-        private readonly IOrganizationService service;
+        private IOrganizationService service;
 
         public RecordManager(IOrganizationService service)
         {
@@ -226,10 +226,13 @@ namespace MscrmTools.PortalRecordsMover.AppCode
                 }
             }
 
-            worker.ReportProgress(0, @"Updating records to add references and processing many-to-many relationships...");
-
             var count = nextCycle.DistinctBy(r => r.Id).Count();
             var index = 0;
+
+            if (count > 0)
+            {
+                worker.ReportProgress(0, @"Updating records to add references and processing many-to-many relationships...");
+            }
 
             foreach (var record in nextCycle.DistinctBy(r => r.Id))
             {
@@ -662,6 +665,11 @@ namespace MscrmTools.PortalRecordsMover.AppCode
                     }
                 }
             }).Entities.ToList();
+        }
+
+        public void SetService(IOrganizationService newService)
+        {
+            service = newService;
         }
 
         private LinkEntity CreateParentEntityLinkToWebsite(string fromEntity, string fromAttribute, string toAttribute, string toEntity, Guid websiteId)
