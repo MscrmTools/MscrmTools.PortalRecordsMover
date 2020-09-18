@@ -33,7 +33,7 @@ namespace MscrmTools.PortalRecordsMover.AppCode
             // Move annotation at the beginning if the list as the list will be
             // inverted to allow list removal. This way, annotation are
             // processed as the last records
-            var annotations = records.Where(e => e.LogicalName == "annotation").ToList();
+            var annotations = records.Where(e => e.LogicalName == "annotation").Reverse().ToList();
             records = records.Except(annotations).ToList();
             records.InsertRange(0, annotations);
 
@@ -663,7 +663,23 @@ namespace MscrmTools.PortalRecordsMover.AppCode
                     {
                         new ConditionExpression("objectid", ConditionOperator.In, ids.ToArray())
                     }
-                }
+                },
+                LinkEntities =
+                {
+                    new LinkEntity
+                    {
+                        LinkFromEntityName = "annotation",
+                        LinkFromAttributeName = "objectid",
+                        LinkToAttributeName = "adx_webfileid",
+                        LinkToEntityName = "adx_webfile",
+                        EntityAlias = "webfile",
+                        Columns = new ColumnSet("adx_name")
+                    }
+                },
+                Orders =
+                    {
+                        new OrderExpression("modifiedon", OrderType.Descending)
+                    }
             }).Entities.ToList();
         }
 

@@ -670,6 +670,38 @@ If you experience issue when transfering some records, especially annotations, p
 
                     var list = (EntityCollection)evt.Result;
 
+                    var notes = list.Entities.Where(e =>
+                        e.LogicalName == "annotation" &&
+                        e.GetAttributeValue<string>("objecttypecode") == "adx_webfile");
+                    var groups = notes.GroupBy(e => e.GetAttributeValue<EntityReference>("objectid")?.Id);
+
+                    if (groups.Any(g => g.Count() > 1))
+                    {
+                        var ids = new List<Guid>();
+
+                        foreach (var group in groups.Where(g => g.Count() > 1))
+                        {
+                            ids.Add(group.Key ?? Guid.Empty);
+                        }
+
+                        ids = ids.Where(i => i != Guid.Empty).Distinct().ToList();
+
+                        var recordsNames = list.Entities
+                            .Where(e => ids.Contains(e.GetAttributeValue<EntityReference>("objectid")?.Id ?? Guid.Empty))
+                            .Select(e => e.GetAttributeValue<AliasedValue>("webfile.adx_name").Value.ToString())
+                            .Distinct();
+
+                        if (DialogResult.No == MessageBox.Show(this,
+                                $@"We found some web files with more than one annotation. Please ensure only one annotation exists for each following web file:
+{string.Join(Environment.NewLine, recordsNames)}
+
+Are you sure you want to continue?", @"Warning", MessageBoxButtons.YesNo,
+                                MessageBoxIcon.Warning))
+                        {
+                            return;
+                        }
+                    }
+
                     if (isFileExport)
                     {
                         ExportToDisk(list);
@@ -916,7 +948,9 @@ If you experience issue when transfering some records, especially annotations, p
 
                     logger.LogInfo("Removing JavaScript file restriction");
 
+                    nManager = new NoteManager(service);
                     nManager.RemoveRestriction();
+                    nManager.TestRestriction();
 
                     // Wait 2 seconds to be sure the settings is updated
                     Thread.Sleep(2000);
