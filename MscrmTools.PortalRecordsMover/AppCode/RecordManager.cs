@@ -457,6 +457,40 @@ namespace MscrmTools.PortalRecordsMover.AppCode
                 query.Criteria.Filters[0].AddCondition("modifiedon", ConditionOperator.OnOrAfter, settings.ModifyFilter.Value.ToString("yyyy-MM-dd"));
             }
 
+            if (emd.LogicalName == "adx_webfile")
+            {
+                var noteLe = new LinkEntity
+                {
+                    LinkFromEntityName = "adx_webfile",
+                    LinkFromAttributeName = "adx_webfileid",
+                    LinkToAttributeName = "objectid",
+                    LinkToEntityName = "annotation",
+                    LinkCriteria = new FilterExpression(LogicalOperator.Or),
+                    EntityAlias = "note"
+                };
+
+                bool addLinkEntity = false;
+
+                if (settings.CreateFilter.HasValue)
+                {
+                    query.Criteria.Filters[0].AddCondition("note", "createdon", ConditionOperator.OnOrAfter,
+                        settings.CreateFilter.Value.ToString("yyyy-MM-dd"));
+                    addLinkEntity = true;
+                }
+
+                if (settings.ModifyFilter.HasValue)
+                {
+                    query.Criteria.Filters[0].AddCondition("note", "modifiedon", ConditionOperator.OnOrAfter,
+                        settings.ModifyFilter.Value.ToString("yyyy-MM-dd"));
+                    addLinkEntity = true;
+                }
+
+                if (addLinkEntity)
+                {
+                    query.LinkEntities.Add(noteLe);
+                }
+            }
+
             if (settings.WebsiteFilter != Guid.Empty)
             {
                 var lamd = emd.Attributes.FirstOrDefault(a =>
@@ -469,36 +503,6 @@ namespace MscrmTools.PortalRecordsMover.AppCode
                 {
                     switch (emd.LogicalName)
                     {
-                        case "adx_webfile":
-                            var noteLe = new LinkEntity
-                            {
-                                LinkFromEntityName = "adx_webfile",
-                                LinkFromAttributeName = "adx_webfileid",
-                                LinkToAttributeName = "objectid",
-                                LinkToEntityName = "annotation",
-                                LinkCriteria = new FilterExpression(LogicalOperator.Or)
-                            };
-
-                            bool addLinkEntity = false;
-
-                            if (settings.CreateFilter.HasValue)
-                            {
-                                noteLe.LinkCriteria.AddCondition("createdon", ConditionOperator.OnOrAfter, settings.CreateFilter.Value.ToString("yyyy-MM-dd"));
-                                addLinkEntity = true;
-                            }
-
-                            if (settings.ModifyFilter.HasValue)
-                            {
-                                noteLe.LinkCriteria.AddCondition("modifiedon", ConditionOperator.OnOrAfter, settings.ModifyFilter.Value.ToString("yyyy-MM-dd"));
-                                addLinkEntity = true;
-                            }
-
-                            if (addLinkEntity)
-                            {
-                                query.LinkEntities.Add(noteLe);
-                            }
-                            break;
-
                         case "adx_entityformmetadata":
                             query.LinkEntities.Add(
                                 CreateParentEntityLinkToWebsite(
