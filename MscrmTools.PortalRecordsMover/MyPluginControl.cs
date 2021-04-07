@@ -331,6 +331,8 @@ If you experience issue when transfering some records, especially annotations, p
 
                     foreach (var entity in results.Entities)
                     {
+                        if (entity.Records.Entities.Count == 0 && !chkDisplayEmptyEntities.Checked) continue;
+
                         var emd = results.Settings.AllEntities.First(ent => ent.LogicalName == entity.Records.EntityName);
                         var tabPage = new TabPage($"{emd.DisplayName?.UserLocalizedLabel?.Label ?? emd.SchemaName} ({entity.Records.Entities.Count})");
                         tabs.Add(tabPage);
@@ -349,12 +351,14 @@ If you experience issue when transfering some records, especially annotations, p
 
                     foreach (var entity in results.NnRecords)
                     {
+                        if (entity.Records.Entities.Count == 0 && !chkDisplayEmptyEntities.Checked) continue;
+
                         var emd = results.Settings.AllEntities.First(ent => ent.LogicalName == entity.Records.EntityName);
                         var rel = results.Settings.AllEntities
                             .SelectMany(ent => ent.ManyToManyRelationships)
                             .First(r => r.IntersectEntityName == emd.LogicalName);
 
-                        var name = $"{results.Settings.AllEntities.First(ent => ent.LogicalName == rel.Entity1LogicalName).DisplayName?.UserLocalizedLabel?.Label} / {results.Settings.AllEntities.First(ent => ent.LogicalName == rel.Entity2LogicalName).DisplayName?.UserLocalizedLabel?.Label}";
+                        var name = $"{results.Settings.AllEntities.First(ent => ent.LogicalName == rel.Entity1LogicalName).DisplayName?.UserLocalizedLabel?.Label} / {results.Settings.AllEntities.First(ent => ent.LogicalName == rel.Entity2LogicalName).DisplayName?.UserLocalizedLabel?.Label} ({entity.Records.Entities.Count})";
 
                         var tabPage = new TabPage(name);
                         tabs.Add(tabPage);
