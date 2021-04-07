@@ -30,6 +30,7 @@ namespace MscrmTools.PortalRecordsMover.AppCode
         public DateTime? ModifyFilter { get; set; }
         public bool RemoveFormattedValues { get; set; }
         public List<string> SelectedEntities { get; set; }
+        public bool ShowEntitiesWithNoRecords { get; set; }
         public Guid WebsiteFilter { get; set; }
         public bool ZipFolderStructure { get; set; }
     }

@@ -169,6 +169,7 @@ namespace MscrmTools.PortalRecordsMover
                     cbExportAsFolderStructure.Checked = settings.ExportInFolderStructure;
                     cbZipFolderStructure.Checked = settings.ZipFolderStructure;
                     cbRemoveFormattedValues.Checked = settings.RemoveFormattedValues;
+                    chkDisplayEmptyEntities.Checked = settings.ShowEntitiesWithNoRecords;
                 }
                 catch (Exception error)
                 {
@@ -564,6 +565,7 @@ If you experience issue when transfering some records, especially annotations, p
             settings.ExportInFolderStructure = cbExportAsFolderStructure.Checked;
             settings.ZipFolderStructure = cbZipFolderStructure.Checked;
             settings.RemoveFormattedValues = cbRemoveFormattedValues.Checked;
+            settings.ShowEntitiesWithNoRecords = chkDisplayEmptyEntities.Checked;
         }
 
         private void ExportData(bool isFileExport)
