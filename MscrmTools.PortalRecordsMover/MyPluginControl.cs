@@ -889,8 +889,8 @@ Are you sure you want to continue?", @"Warning", MessageBoxButtons.YesNo,
                     return;
                 }
 
-                iSettings.DeactivateWebPagePlugins = true;
-                iSettings.RemoveJavaScriptFileRestriction = true;
+                iSettings.DeactivateWebPagePlugins = pluginCheck;
+                iSettings.RemoveJavaScriptFileRestriction = javascriptCheck;
                 iSettings.CleanWebFiles = dialog.CleanWebFiles;
             }
 
