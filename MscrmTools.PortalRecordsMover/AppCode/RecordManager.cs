@@ -143,7 +143,7 @@ namespace MscrmTools.PortalRecordsMover.AppCode
                         record.Attributes.Remove("statuscode");
                     }
 
-                    if (organizationMajorVersion >= 8)
+                    if (organizationMajorVersion >= 8 && !settings.CreateOnlyNewSiteSettings)
                     {
                         var result = (UpsertResponse)service.Execute(new UpsertRequest
                         {
@@ -168,9 +168,17 @@ namespace MscrmTools.PortalRecordsMover.AppCode
 
                         if (exists)
                         {
-                            service.Update(record);
-                            logger.LogInfo(
-                                $"Record {name} ({record.Id}) updated ({entityProgress.Entity}/{record.Id})");
+                            if (settings.CreateOnlyNewSiteSettings)
+                            {
+                                logger.LogWarning(
+                               $"Record {name} ({record.Id}) not updated ({entityProgress.Entity}/{record.Id}) because of user choice");
+                            }
+                            else
+                            {
+                                service.Update(record);
+                                logger.LogInfo(
+                                    $"Record {name} ({record.Id}) updated ({entityProgress.Entity}/{record.Id})");
+                            }
                         }
                         else
                         {

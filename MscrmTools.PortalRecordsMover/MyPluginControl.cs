@@ -885,10 +885,11 @@ Are you sure you want to continue?", @"Warning", MessageBoxButtons.YesNo,
             var webFileCleaning = ec.Entities.Any(e =>
                 e.LogicalName == "annotation" &&
                 e.GetAttributeValue<EntityReference>("objectid")?.LogicalName == "adx_webfile");
+            var siteSettingsCheck = ec.Entities.Any(e => e.LogicalName == "adx_sitesetting");
 
-            if (pluginCheck || javascriptCheck)
+            if (pluginCheck || javascriptCheck || siteSettingsCheck)
             {
-                var dialog = new PreImportWarningDialog(pluginCheck, javascriptCheck, webFileCleaning);
+                var dialog = new PreImportWarningDialog(pluginCheck, javascriptCheck, webFileCleaning, siteSettingsCheck);
                 var result = dialog.ShowDialog(this);
                 if (result == DialogResult.Cancel)
                 {
@@ -898,6 +899,7 @@ Are you sure you want to continue?", @"Warning", MessageBoxButtons.YesNo,
                 iSettings.DeactivateWebPagePlugins = pluginCheck;
                 iSettings.RemoveJavaScriptFileRestriction = javascriptCheck;
                 iSettings.CleanWebFiles = dialog.CleanWebFiles;
+                iSettings.CreateOnlyNewSiteSettings = dialog.CreateOnlyNewSiteSettings;
             }
 
             var lm = new LogManager(GetType());
