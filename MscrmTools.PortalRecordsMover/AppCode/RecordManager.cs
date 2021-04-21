@@ -168,7 +168,7 @@ namespace MscrmTools.PortalRecordsMover.AppCode
 
                         if (exists)
                         {
-                            if (settings.CreateOnlyNewSiteSettings)
+                            if (settings.CreateOnlyNewSiteSettings && record.LogicalName == "adx_sitesetting")
                             {
                                 logger.LogWarning(
                                $"Record {name} ({record.Id}) not updated ({entityProgress.Entity}/{record.Id}) because of user choice");

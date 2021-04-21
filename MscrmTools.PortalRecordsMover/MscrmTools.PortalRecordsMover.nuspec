@@ -11,7 +11,7 @@
     <iconUrl>https://raw.githubusercontent.com/wiki/MscrmTools/XrmToolBox/Images/logo_0100.png</iconUrl>
     <description>Export/Import Dynamics 365 portal records</description>
     <summary>Export/Import Dynamics 365 portal records</summary>
-    <releaseNotes>Added a check and option to avoid updating existing Site Settings</releaseNotes>
+    <releaseNotes>Fixed the latest release that added a check and option to avoid updating existing Site Settings</releaseNotes>
     <tags>XrmToolBox Plugin PortalRecordsMover</tags>
     <dependencies>
       <dependency id="XrmToolBox" version="1.2018.7.27" />
