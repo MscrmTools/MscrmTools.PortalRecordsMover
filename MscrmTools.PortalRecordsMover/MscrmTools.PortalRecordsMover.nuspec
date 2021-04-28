@@ -17,4 +17,7 @@
       <dependency id="XrmToolBox" version="1.2018.7.27" />
     </dependencies>
   </metadata>
+  <files>
+    <file src="bin\Release\MscrmTools.PortalRecordsMover.dll" target="lib\net452\Plugins" />
+  </files>
 </package>
