@@ -9,9 +9,31 @@ namespace MscrmTools.PortalRecordsMover.AppCode
 {
     public static class MetadataManager
     {
-        public static List<EntityMetadata> GetEntitiesList(IOrganizationService service, List<string> logicalNames = null)
+        public static List<EntityMetadata> GetEntitiesList(IOrganizationService service)
         {
             EntityQueryExpression entityQueryExpressionFull = new EntityQueryExpression
+            {
+                Properties = new MetadataPropertiesExpression
+                {
+                    AllProperties = false,
+                    PropertyNames =
+                    {
+                        "LogicalName"
+                    }
+                }
+            };
+
+            RetrieveMetadataChangesRequest request = new RetrieveMetadataChangesRequest
+            {
+                Query = entityQueryExpressionFull,
+                ClientVersionStamp = null
+            };
+
+            var fullResponse = (RetrieveMetadataChangesResponse)service.Execute(request);
+
+            var logicalNames = fullResponse.EntityMetadata.Where(e => e.LogicalName.StartsWith("adx_") || e.LogicalName == "annotation").Select(e => e.LogicalName).ToList();
+
+            entityQueryExpressionFull = new EntityQueryExpression
             {
                 Properties = new MetadataPropertiesExpression
                 {
@@ -29,6 +51,13 @@ namespace MscrmTools.PortalRecordsMover.AppCode
                         "ObjectTypeCode"
                     }
                 },
+                Criteria = new MetadataFilterExpression
+                {
+                    Conditions =
+                    {
+                        new MetadataConditionExpression("LogicalName", MetadataConditionOperator.In, logicalNames.ToArray())
+                    }
+                },
                 AttributeQuery = new AttributeQueryExpression
                 {
                     Properties = new MetadataPropertiesExpression
@@ -39,26 +68,15 @@ namespace MscrmTools.PortalRecordsMover.AppCode
                 }
             };
 
-            if (logicalNames != null)
-            {
-                entityQueryExpressionFull.Criteria = new MetadataFilterExpression
-                {
-                    Conditions =
-                    {
-                        new MetadataConditionExpression("LogicalName", MetadataConditionOperator.In, logicalNames.ToArray())
-                    }
-                };
-            }
-
-            RetrieveMetadataChangesRequest request = new RetrieveMetadataChangesRequest
+            request = new RetrieveMetadataChangesRequest
             {
                 Query = entityQueryExpressionFull,
                 ClientVersionStamp = null
             };
 
-            var fullResponse = (RetrieveMetadataChangesResponse)service.Execute(request);
+            fullResponse = (RetrieveMetadataChangesResponse)service.Execute(request);
 
-            return fullResponse.EntityMetadata.Where(e => e.LogicalName.StartsWith("adx_") || e.LogicalName == "annotation").ToList();
+            return fullResponse.EntityMetadata.ToList();
         }
     }
 }
