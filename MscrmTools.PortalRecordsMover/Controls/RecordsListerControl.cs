@@ -128,12 +128,18 @@ namespace MscrmTools.PortalRecordsMover.Controls
 
             switch (amd.AttributeType.Value)
             {
+                case AttributeTypeCode.PartyList:
+                    return string.Join(", ", record.GetAttributeValue<EntityCollection>(value).Entities.Select(e => e.GetAttributeValue<EntityReference>("partyid")?.Name).ToArray());
+
                 case AttributeTypeCode.Boolean:
                     return record.GetAttributeValue<bool>(value).ToString();
 
                 case AttributeTypeCode.Customer:
                 case AttributeTypeCode.Lookup:
                 case AttributeTypeCode.Owner:
+                    if (record[value] is EntityCollection)
+                        return string.Join(", ", record.GetAttributeValue<EntityCollection>(value).Entities.Select(e => e.GetAttributeValue<EntityReference>("partyid")?.Name).ToArray());
+
                     return record.GetAttributeValue<EntityReference>(value)?.Name ?? string.Empty;
 
                 case AttributeTypeCode.DateTime:
