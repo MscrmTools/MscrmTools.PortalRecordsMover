@@ -120,74 +120,81 @@ namespace MscrmTools.PortalRecordsMover.Controls
 
         private string GetRecordValue(Entity record, string value, EntityMetadata emd)
         {
-            var amd = emd.Attributes.FirstOrDefault(a => a.LogicalName == value);
-            if (amd == null)
+            try
             {
-                return record.Contains(value) ? record["value"].ToString() : string.Empty;
-            }
+                var amd = emd.Attributes.FirstOrDefault(a => a.LogicalName == value);
+                if (amd == null)
+                {
+                    return record.Contains(value) ? record["value"].ToString() : string.Empty;
+                }
 
-            switch (amd.AttributeType.Value)
-            {
-                case AttributeTypeCode.PartyList:
-                    return string.Join(", ", record.GetAttributeValue<EntityCollection>(value).Entities.Select(e => e.GetAttributeValue<EntityReference>("partyid")?.Name).ToArray());
-
-                case AttributeTypeCode.Boolean:
-                    return record.GetAttributeValue<bool>(value).ToString();
-
-                case AttributeTypeCode.Customer:
-                case AttributeTypeCode.Lookup:
-                case AttributeTypeCode.Owner:
-                    if (record[value] is EntityCollection)
+                switch (amd.AttributeType.Value)
+                {
+                    case AttributeTypeCode.PartyList:
                         return string.Join(", ", record.GetAttributeValue<EntityCollection>(value).Entities.Select(e => e.GetAttributeValue<EntityReference>("partyid")?.Name).ToArray());
 
-                    return record.GetAttributeValue<EntityReference>(value)?.Name ?? string.Empty;
+                    case AttributeTypeCode.Boolean:
+                        return record.GetAttributeValue<bool>(value).ToString();
 
-                case AttributeTypeCode.DateTime:
-                    return record.GetAttributeValue<DateTime>(value).ToString();
+                    case AttributeTypeCode.Customer:
+                    case AttributeTypeCode.Lookup:
+                    case AttributeTypeCode.Owner:
+                        if (record.Contains(value) && record[value] is EntityCollection)
+                            return string.Join(", ", record.GetAttributeValue<EntityCollection>(value).Entities.Select(e => e.GetAttributeValue<EntityReference>("partyid")?.Name).ToArray());
 
-                case AttributeTypeCode.Decimal:
-                    return record.GetAttributeValue<decimal>(value).ToString();
+                        return record.GetAttributeValue<EntityReference>(value)?.Name ?? string.Empty;
 
-                case AttributeTypeCode.Double:
-                    return record.GetAttributeValue<double>(value).ToString();
+                    case AttributeTypeCode.DateTime:
+                        return record.GetAttributeValue<DateTime>(value).ToString();
 
-                case AttributeTypeCode.Integer:
-                    return record.GetAttributeValue<int>(value).ToString();
+                    case AttributeTypeCode.Decimal:
+                        return record.GetAttributeValue<decimal>(value).ToString();
 
-                case AttributeTypeCode.EntityName:
-                case AttributeTypeCode.Memo:
-                case AttributeTypeCode.String:
-                    return record.GetAttributeValue<string>(value);
+                    case AttributeTypeCode.Double:
+                        return record.GetAttributeValue<double>(value).ToString();
 
-                case AttributeTypeCode.Picklist:
-                    {
-                        var ov = record.GetAttributeValue<OptionSetValue>(value);
-                        if (ov == null) return string.Empty;
-                        var pamd = (PicklistAttributeMetadata)amd;
-                        return pamd.OptionSet.Options.First(
-                            o => o.Value.Value == ov.Value)
-                            .Label?.UserLocalizedLabel?.Label;
-                    }
-                case AttributeTypeCode.State:
-                    {
-                        var ov = record.GetAttributeValue<OptionSetValue>(value);
-                        if (ov == null) return string.Empty;
-                        var pamd = (StateAttributeMetadata)amd;
-                        return pamd.OptionSet.Options.First(
-                            o => o.Value.Value == ov.Value)
-                            .Label.UserLocalizedLabel.Label;
-                    }
-                case AttributeTypeCode.Status:
-                    {
-                        var ov = record.GetAttributeValue<OptionSetValue>(value);
-                        if (ov == null) return string.Empty;
-                        var pamd = (StatusAttributeMetadata)amd;
-                        return pamd.OptionSet.Options.First(
-                            o => o.Value.Value == ov.Value)
-                            .Label.UserLocalizedLabel.Label;
-                    }
-                default:
-                    return record.Contains(value) ? record["value"].ToString() : string.Empty;
+                    case AttributeTypeCode.Integer:
+                        return record.GetAttributeValue<int>(value).ToString();
+
+                    case AttributeTypeCode.EntityName:
+                    case AttributeTypeCode.Memo:
+                    case AttributeTypeCode.String:
+                        return record.GetAttributeValue<string>(value);
+
+                    case AttributeTypeCode.Picklist:
+                        {
+                            var ov = record.GetAttributeValue<OptionSetValue>(value);
+                            if (ov == null) return string.Empty;
+                            var pamd = (PicklistAttributeMetadata)amd;
+                            return pamd.OptionSet.Options.First(
+                                o => o.Value.Value == ov.Value)
+                                .Label?.UserLocalizedLabel?.Label;
+                        }
+                    case AttributeTypeCode.State:
+                        {
+                            var ov = record.GetAttributeValue<OptionSetValue>(value);
+                            if (ov == null) return string.Empty;
+                            var pamd = (StateAttributeMetadata)amd;
+                            return pamd.OptionSet.Options.First(
+                                o => o.Value.Value == ov.Value)
+                                .Label.UserLocalizedLabel.Label;
+                        }
+                    case AttributeTypeCode.Status:
+                        {
+                            var ov = record.GetAttributeValue<OptionSetValue>(value);
+                            if (ov == null) return string.Empty;
+                            var pamd = (StatusAttributeMetadata)amd;
+                            return pamd.OptionSet.Options.First(
+                                o => o.Value.Value == ov.Value)
+                                .Label.UserLocalizedLabel.Label;
+                        }
+                    default:
+                        return record.Contains(value) ? record["value"].ToString() : string.Empty;
+                }
+            }
+            catch
+            {
+                return "(error)";
             }
         }
 
