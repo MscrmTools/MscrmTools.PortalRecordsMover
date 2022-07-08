@@ -113,6 +113,8 @@ namespace MscrmTools.PortalRecordsMover.Controls
             }
         }
 
+        public event EventHandler<OpenRecordEventArgs> OnItemDoubleClick;
+
         public List<Entity> Records
         {
             get { return lvRecords.CheckedItems.Cast<ListViewItem>().Select(i => i.Tag as Entity).ToList(); }
@@ -206,12 +208,27 @@ namespace MscrmTools.PortalRecordsMover.Controls
             }
         }
 
+        private void llOpenItem_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            if (lvRecords.SelectedItems.Count == 0) return;
+
+            var selectedItem = lvRecords.SelectedItems[0];
+            var record = (Entity)selectedItem.Tag;
+
+            OnItemDoubleClick?.Invoke(this, new OpenRecordEventArgs(record));
+        }
+
         private void llSelectAll_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
             foreach (ListViewItem item in lvRecords.Items)
             {
                 item.Checked = true;
             }
+        }
+
+        private void lvRecords_ItemChecked(object sender, ItemCheckedEventArgs e)
+        {
+            llClear.Text = $"{llClear.Text.Split('(')[0].TrimEnd()} ({lvRecords.CheckedItems.Count})";
         }
     }
 }

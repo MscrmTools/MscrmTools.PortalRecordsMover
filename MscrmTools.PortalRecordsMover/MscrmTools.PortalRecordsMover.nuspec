@@ -12,8 +12,9 @@
     <description>Export/Import Dynamics 365 portal records</description>
     <summary>Export/Import Dynamics 365 portal records</summary>
     <releaseNotes>
-      Fixed issue with activity tables when quick search view displays activity parties (#53) - second try
-      Optimized loading of portal metadata
+      Added Modified on and Modified by columns to all return records
+      Added count of selected items
+      Added opening of individual records in Portal Management application (requires latest version of XrmToolBox)
     </releaseNotes>
     <tags>XrmToolBox Plugin PortalRecordsMover</tags>
     <dependencies>

@@ -48,6 +48,7 @@ namespace MscrmTools.PortalRecordsMover
             this.saveSettingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.scRight = new System.Windows.Forms.SplitContainer();
             this.gbOptions = new System.Windows.Forms.GroupBox();
+            this.chkDisplayEmptyEntities = new System.Windows.Forms.CheckBox();
             this.cbRemoveFormattedValues = new System.Windows.Forms.CheckBox();
             this.cbZipFolderStructure = new System.Windows.Forms.CheckBox();
             this.cbExportAsFolderStructure = new System.Windows.Forms.CheckBox();
@@ -86,7 +87,6 @@ namespace MscrmTools.PortalRecordsMover
             this.lblImportFileLabel = new System.Windows.Forms.Label();
             this.pnlImportHeader = new System.Windows.Forms.Panel();
             this.lblImportHeader = new System.Windows.Forms.Label();
-            this.chkDisplayEmptyEntities = new System.Windows.Forms.CheckBox();
             this.tsMain.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.scRight)).BeginInit();
             this.scRight.Panel1.SuspendLayout();
@@ -110,7 +110,7 @@ namespace MscrmTools.PortalRecordsMover
             this.tsbLoad.Image = ((System.Drawing.Image)(resources.GetObject("tsbLoad.Image")));
             this.tsbLoad.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tsbLoad.Name = "tsbLoad";
-            this.tsbLoad.Size = new System.Drawing.Size(119, 41);
+            this.tsbLoad.Size = new System.Drawing.Size(119, 52);
             this.tsbLoad.Text = "Load items";
             this.tsbLoad.ToolTipText = "Load entities and website from the connected organization.\r\n\r\nThis step is mandat" +
     "ory before executing other actions";
@@ -119,7 +119,7 @@ namespace MscrmTools.PortalRecordsMover
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(6, 34);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(6, 57);
             // 
             // tsbRetrieveRecords
             // 
@@ -127,7 +127,7 @@ namespace MscrmTools.PortalRecordsMover
             this.tsbRetrieveRecords.Image = ((System.Drawing.Image)(resources.GetObject("tsbRetrieveRecords.Image")));
             this.tsbRetrieveRecords.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tsbRetrieveRecords.Name = "tsbRetrieveRecords";
-            this.tsbRetrieveRecords.Size = new System.Drawing.Size(166, 29);
+            this.tsbRetrieveRecords.Size = new System.Drawing.Size(158, 52);
             this.tsbRetrieveRecords.Text = "Retrieve records";
             this.tsbRetrieveRecords.ToolTipText = "Retrieve records based on options defined";
             this.tsbRetrieveRecords.Click += new System.EventHandler(this.tsbRetrieveRecords_Click);
@@ -135,7 +135,7 @@ namespace MscrmTools.PortalRecordsMover
             // toolStripSeparator2
             // 
             this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(6, 34);
+            this.toolStripSeparator2.Size = new System.Drawing.Size(6, 57);
             // 
             // tsbExport
             // 
@@ -143,7 +143,7 @@ namespace MscrmTools.PortalRecordsMover
             this.tsbExport.Image = ((System.Drawing.Image)(resources.GetObject("tsbExport.Image")));
             this.tsbExport.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tsbExport.Name = "tsbExport";
-            this.tsbExport.Size = new System.Drawing.Size(155, 29);
+            this.tsbExport.Size = new System.Drawing.Size(147, 52);
             this.tsbExport.Text = "Export records";
             this.tsbExport.ToolTipText = "Export records in a file";
             this.tsbExport.Click += new System.EventHandler(this.tsbExport_Click);
@@ -153,7 +153,7 @@ namespace MscrmTools.PortalRecordsMover
             this.tsbImportRecords.Image = ((System.Drawing.Image)(resources.GetObject("tsbImportRecords.Image")));
             this.tsbImportRecords.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tsbImportRecords.Name = "tsbImportRecords";
-            this.tsbImportRecords.Size = new System.Drawing.Size(159, 29);
+            this.tsbImportRecords.Size = new System.Drawing.Size(151, 52);
             this.tsbImportRecords.Text = "Import records";
             this.tsbImportRecords.ToolTipText = "Import records from a file";
             this.tsbImportRecords.Click += new System.EventHandler(this.tsbImportRecords_Click);
@@ -175,7 +175,7 @@ namespace MscrmTools.PortalRecordsMover
             this.tsMain.Location = new System.Drawing.Point(0, 0);
             this.tsMain.Name = "tsMain";
             this.tsMain.Padding = new System.Windows.Forms.Padding(0, 0, 3, 0);
-            this.tsMain.Size = new System.Drawing.Size(1680, 46);
+            this.tsMain.Size = new System.Drawing.Size(2100, 57);
             this.tsMain.TabIndex = 3;
             this.tsMain.Text = "tsMain";
             // 
@@ -185,14 +185,14 @@ namespace MscrmTools.PortalRecordsMover
             this.tsbClose.Image = ((System.Drawing.Image)(resources.GetObject("tsbClose.Image")));
             this.tsbClose.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tsbClose.Name = "tsbClose";
-            this.tsbClose.Size = new System.Drawing.Size(34, 29);
+            this.tsbClose.Size = new System.Drawing.Size(34, 52);
             this.tsbClose.Text = "Close";
             this.tsbClose.Click += new System.EventHandler(this.tsbClose_Click);
             // 
             // toolStripSeparator3
             // 
             this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(6, 34);
+            this.toolStripSeparator3.Size = new System.Drawing.Size(6, 57);
             // 
             // tssbTransferData
             // 
@@ -202,7 +202,7 @@ namespace MscrmTools.PortalRecordsMover
             this.tssbTransferData.Image = global::MscrmTools.PortalRecordsMover.Properties.Resources.database;
             this.tssbTransferData.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tssbTransferData.Name = "tssbTransferData";
-            this.tssbTransferData.Size = new System.Drawing.Size(182, 29);
+            this.tssbTransferData.Size = new System.Drawing.Size(174, 52);
             this.tssbTransferData.Text = "Transfer records";
             this.tssbTransferData.ToolTipText = "Transfer records between the connected organization and another organization";
             this.tssbTransferData.ButtonClick += new System.EventHandler(this.tsbTransferData_Click);
@@ -218,7 +218,7 @@ namespace MscrmTools.PortalRecordsMover
             // toolStripSeparator4
             // 
             this.toolStripSeparator4.Name = "toolStripSeparator4";
-            this.toolStripSeparator4.Size = new System.Drawing.Size(6, 34);
+            this.toolStripSeparator4.Size = new System.Drawing.Size(6, 57);
             // 
             // tsddSettings
             // 
@@ -229,7 +229,7 @@ namespace MscrmTools.PortalRecordsMover
             this.tsddSettings.Image = ((System.Drawing.Image)(resources.GetObject("tsddSettings.Image")));
             this.tsddSettings.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tsddSettings.Name = "tsddSettings";
-            this.tsddSettings.Size = new System.Drawing.Size(118, 29);
+            this.tsddSettings.Size = new System.Drawing.Size(110, 52);
             this.tsddSettings.Text = "Settings";
             // 
             // loadSettingsToolStripMenuItem
@@ -262,8 +262,8 @@ namespace MscrmTools.PortalRecordsMover
             // 
             this.scRight.Panel2.Controls.Add(this.tabCtrl);
             this.scRight.Panel2.Controls.Add(this.pnlTabSelection);
-            this.scRight.Size = new System.Drawing.Size(1401, 1145);
-            this.scRight.SplitterDistance = 398;
+            this.scRight.Size = new System.Drawing.Size(1754, 1415);
+            this.scRight.SplitterDistance = 490;
             this.scRight.SplitterWidth = 10;
             this.scRight.TabIndex = 0;
             // 
@@ -282,10 +282,20 @@ namespace MscrmTools.PortalRecordsMover
             this.gbOptions.Margin = new System.Windows.Forms.Padding(6, 8, 6, 8);
             this.gbOptions.Name = "gbOptions";
             this.gbOptions.Padding = new System.Windows.Forms.Padding(6, 8, 6, 8);
-            this.gbOptions.Size = new System.Drawing.Size(1401, 398);
+            this.gbOptions.Size = new System.Drawing.Size(1754, 490);
             this.gbOptions.TabIndex = 0;
             this.gbOptions.TabStop = false;
             this.gbOptions.Text = "Options";
+            // 
+            // chkDisplayEmptyEntities
+            // 
+            this.chkDisplayEmptyEntities.AutoSize = true;
+            this.chkDisplayEmptyEntities.Location = new System.Drawing.Point(6, 285);
+            this.chkDisplayEmptyEntities.Name = "chkDisplayEmptyEntities";
+            this.chkDisplayEmptyEntities.Size = new System.Drawing.Size(297, 24);
+            this.chkDisplayEmptyEntities.TabIndex = 7;
+            this.chkDisplayEmptyEntities.Text = "Display entities with no records found";
+            this.chkDisplayEmptyEntities.UseVisualStyleBackColor = true;
             // 
             // cbRemoveFormattedValues
             // 
@@ -337,7 +347,7 @@ namespace MscrmTools.PortalRecordsMover
             this.wpcWebsiteFilter.Margin = new System.Windows.Forms.Padding(6, 8, 6, 8);
             this.wpcWebsiteFilter.Name = "wpcWebsiteFilter";
             this.wpcWebsiteFilter.SelectedWebSiteId = new System.Guid("00000000-0000-0000-0000-000000000000");
-            this.wpcWebsiteFilter.Size = new System.Drawing.Size(1389, 52);
+            this.wpcWebsiteFilter.Size = new System.Drawing.Size(1742, 52);
             this.wpcWebsiteFilter.TabIndex = 2;
             // 
             // docModifyFilter
@@ -350,7 +360,7 @@ namespace MscrmTools.PortalRecordsMover
             this.docModifyFilter.Margin = new System.Windows.Forms.Padding(6, 8, 6, 8);
             this.docModifyFilter.Name = "docModifyFilter";
             this.docModifyFilter.SelectedDate = new System.DateTime(2017, 6, 13, 13, 59, 42, 271);
-            this.docModifyFilter.Size = new System.Drawing.Size(1389, 52);
+            this.docModifyFilter.Size = new System.Drawing.Size(1742, 52);
             this.docModifyFilter.TabIndex = 1;
             // 
             // docCreateFilter
@@ -363,7 +373,7 @@ namespace MscrmTools.PortalRecordsMover
             this.docCreateFilter.Margin = new System.Windows.Forms.Padding(6, 8, 6, 8);
             this.docCreateFilter.Name = "docCreateFilter";
             this.docCreateFilter.SelectedDate = new System.DateTime(2017, 6, 13, 13, 59, 42, 288);
-            this.docCreateFilter.Size = new System.Drawing.Size(1389, 52);
+            this.docCreateFilter.Size = new System.Drawing.Size(1742, 52);
             this.docCreateFilter.TabIndex = 0;
             // 
             // tabCtrl
@@ -373,7 +383,7 @@ namespace MscrmTools.PortalRecordsMover
             this.tabCtrl.Margin = new System.Windows.Forms.Padding(6, 8, 6, 8);
             this.tabCtrl.Name = "tabCtrl";
             this.tabCtrl.SelectedIndex = 0;
-            this.tabCtrl.Size = new System.Drawing.Size(1401, 695);
+            this.tabCtrl.Size = new System.Drawing.Size(1754, 873);
             this.tabCtrl.TabIndex = 5;
             this.tabCtrl.SelectedIndexChanged += new System.EventHandler(this.tabCtrl_SelectedIndexChanged);
             // 
@@ -384,7 +394,7 @@ namespace MscrmTools.PortalRecordsMover
             this.pnlTabSelection.Location = new System.Drawing.Point(0, 0);
             this.pnlTabSelection.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.pnlTabSelection.Name = "pnlTabSelection";
-            this.pnlTabSelection.Size = new System.Drawing.Size(1401, 42);
+            this.pnlTabSelection.Size = new System.Drawing.Size(1754, 42);
             this.pnlTabSelection.TabIndex = 4;
             this.pnlTabSelection.Visible = false;
             // 
@@ -393,7 +403,7 @@ namespace MscrmTools.PortalRecordsMover
             this.cbbTabSelection.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.cbbTabSelection.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cbbTabSelection.FormattingEnabled = true;
-            this.cbbTabSelection.Location = new System.Drawing.Point(987, 5);
+            this.cbbTabSelection.Location = new System.Drawing.Point(1340, 5);
             this.cbbTabSelection.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.cbbTabSelection.Name = "cbbTabSelection";
             this.cbbTabSelection.Size = new System.Drawing.Size(408, 28);
@@ -403,7 +413,7 @@ namespace MscrmTools.PortalRecordsMover
             // scMain
             // 
             this.scMain.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.scMain.Location = new System.Drawing.Point(0, 55);
+            this.scMain.Location = new System.Drawing.Point(0, 86);
             this.scMain.Margin = new System.Windows.Forms.Padding(6, 8, 6, 8);
             this.scMain.Name = "scMain";
             // 
@@ -414,8 +424,8 @@ namespace MscrmTools.PortalRecordsMover
             // scMain.Panel2
             // 
             this.scMain.Panel2.Controls.Add(this.scRight);
-            this.scMain.Size = new System.Drawing.Size(1680, 1145);
-            this.scMain.SplitterDistance = 270;
+            this.scMain.Size = new System.Drawing.Size(2100, 1415);
+            this.scMain.SplitterDistance = 337;
             this.scMain.SplitterWidth = 9;
             this.scMain.TabIndex = 4;
             // 
@@ -426,7 +436,7 @@ namespace MscrmTools.PortalRecordsMover
             this.ecpEntities.Margin = new System.Windows.Forms.Padding(6, 8, 6, 8);
             this.ecpEntities.Name = "ecpEntities";
             this.ecpEntities.Service = null;
-            this.ecpEntities.Size = new System.Drawing.Size(270, 1145);
+            this.ecpEntities.Size = new System.Drawing.Size(337, 1415);
             this.ecpEntities.TabIndex = 0;
             // 
             // pnlImport
@@ -457,7 +467,7 @@ namespace MscrmTools.PortalRecordsMover
             this.pnlImportMain.Location = new System.Drawing.Point(0, 135);
             this.pnlImportMain.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.pnlImportMain.Name = "pnlImportMain";
-            this.pnlImportMain.Padding = new System.Windows.Forms.Padding(8, 8, 8, 8);
+            this.pnlImportMain.Padding = new System.Windows.Forms.Padding(8);
             this.pnlImportMain.Size = new System.Drawing.Size(998, 591);
             this.pnlImportMain.TabIndex = 9;
             this.pnlImportMain.Visible = false;
@@ -533,9 +543,9 @@ namespace MscrmTools.PortalRecordsMover
             // 
             this.pnlProgressTiles.Dock = System.Windows.Forms.DockStyle.Top;
             this.pnlProgressTiles.Location = new System.Drawing.Point(8, 36);
-            this.pnlProgressTiles.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.pnlProgressTiles.Margin = new System.Windows.Forms.Padding(2);
             this.pnlProgressTiles.Name = "pnlProgressTiles";
-            this.pnlProgressTiles.Padding = new System.Windows.Forms.Padding(8, 8, 8, 8);
+            this.pnlProgressTiles.Padding = new System.Windows.Forms.Padding(8);
             this.pnlProgressTiles.Size = new System.Drawing.Size(982, 65);
             this.pnlProgressTiles.TabIndex = 10;
             // 
@@ -645,7 +655,7 @@ namespace MscrmTools.PortalRecordsMover
             this.rdbSelectFile.Checked = true;
             this.rdbSelectFile.Dock = System.Windows.Forms.DockStyle.Right;
             this.rdbSelectFile.Location = new System.Drawing.Point(638, 0);
-            this.rdbSelectFile.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.rdbSelectFile.Margin = new System.Windows.Forms.Padding(2);
             this.rdbSelectFile.Name = "rdbSelectFile";
             this.rdbSelectFile.Size = new System.Drawing.Size(153, 35);
             this.rdbSelectFile.TabIndex = 3;
@@ -658,7 +668,7 @@ namespace MscrmTools.PortalRecordsMover
             this.rdbSelectFolder.AutoSize = true;
             this.rdbSelectFolder.Dock = System.Windows.Forms.DockStyle.Right;
             this.rdbSelectFolder.Location = new System.Drawing.Point(791, 0);
-            this.rdbSelectFolder.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.rdbSelectFolder.Margin = new System.Windows.Forms.Padding(2);
             this.rdbSelectFolder.Name = "rdbSelectFolder";
             this.rdbSelectFolder.Size = new System.Drawing.Size(79, 35);
             this.rdbSelectFolder.TabIndex = 4;
@@ -709,16 +719,6 @@ namespace MscrmTools.PortalRecordsMover
             this.lblImportHeader.Size = new System.Drawing.Size(313, 45);
             this.lblImportHeader.TabIndex = 0;
             this.lblImportHeader.Text = "Portal Records Import";
-            // 
-            // chkDisplayEmptyEntities
-            // 
-            this.chkDisplayEmptyEntities.AutoSize = true;
-            this.chkDisplayEmptyEntities.Location = new System.Drawing.Point(6, 285);
-            this.chkDisplayEmptyEntities.Name = "chkDisplayEmptyEntities";
-            this.chkDisplayEmptyEntities.Size = new System.Drawing.Size(297, 24);
-            this.chkDisplayEmptyEntities.TabIndex = 7;
-            this.chkDisplayEmptyEntities.Text = "Display entities with no records found";
-            this.chkDisplayEmptyEntities.UseVisualStyleBackColor = true;
             // 
             // MyPluginControl
             // 

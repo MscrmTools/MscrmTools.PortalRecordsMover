@@ -63,6 +63,43 @@ namespace MscrmTools.PortalRecordsMover
 
         #region Events
 
+        private void AddModifiedInfoToLayoutXml(ref string layoutxml)
+        {
+            var doc = new XmlDocument();
+            doc.LoadXml(layoutxml);
+
+            var rowNode = doc.SelectSingleNode("grid/row");
+            var cellNodes = rowNode.ChildNodes.Cast<XmlNode>().ToList();
+            if (!cellNodes.Any(c => c.Attributes["name"].Value == "modifiedon"))
+            {
+                var nameAttr = doc.CreateAttribute("name");
+                nameAttr.Value = "modifiedon";
+                var widthAttr = doc.CreateAttribute("width");
+                widthAttr.Value = "100";
+
+                var moCell = doc.CreateElement("cell");
+                moCell.Attributes.Append(nameAttr);
+                moCell.Attributes.Append(widthAttr);
+
+                rowNode.AppendChild(moCell);
+            }
+
+            if (!cellNodes.Any(c => c.Attributes["name"].Value == "modifiedby"))
+            {
+                var nameAttr = doc.CreateAttribute("name");
+                nameAttr.Value = "modifiedby";
+                var widthAttr = doc.CreateAttribute("width");
+                widthAttr.Value = "100";
+
+                var moCell = doc.CreateElement("cell");
+                moCell.Attributes.Append(nameAttr);
+                moCell.Attributes.Append(widthAttr);
+                rowNode.AppendChild(moCell);
+            }
+
+            layoutxml = doc.OuterXml;
+        }
+
         private void btnBrowseImportFile_Click(object sender, EventArgs e)
         {
             if (rdbSelectFile.Checked)
@@ -205,6 +242,18 @@ If you experience issue when transfering some records, especially annotations, p
             }
         }
 
+        private void Rl_OnItemDoubleClick(object sender, OpenRecordEventArgs e)
+        {
+            try
+            {
+                ConnectionDetail.OpenUrlWithBrowserProfile(new Uri($"{ConnectionDetail.WebApplicationUrl}/main.aspx?appName=Dynamics365Portals&pagetype=entityrecord&etn={e.Record.LogicalName}&id={e.Record.Id:B}"));
+            }
+            catch
+            {
+                MessageBox.Show(this, "Please update to latest version of XrmToolBox to navigate to the selected record", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+
         private void saveSettingsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             var sfDialog = new SaveFileDialog { Filter = @"XML Document (*.xml)|*.xml" };
@@ -342,10 +391,13 @@ If you experience issue when transfering some records, especially annotations, p
                             v => v.GetAttributeValue<string>("returnedtypecode") == emd.LogicalName)
                             .GetAttributeValue<string>("layoutxml");
 
+                        AddModifiedInfoToLayoutXml(ref layoutxml);
+
                         var rl = new RecordsListerControl(entity.Records.Entities.ToList(), emd, layoutxml)
                         {
                             Dock = DockStyle.Fill
                         };
+                        rl.OnItemDoubleClick += Rl_OnItemDoubleClick;
 
                         tabPage.Controls.Add(rl);
                     }
