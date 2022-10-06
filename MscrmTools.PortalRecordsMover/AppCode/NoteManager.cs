@@ -17,11 +17,11 @@ namespace MscrmTools.PortalRecordsMover.AppCode
             GetSettings();
         }
 
-        public bool HasJsRestriction => settings.GetAttributeValue<string>("blockedattachments").Contains(";js");
+        public bool HasJsRestriction => settings.GetAttributeValue<string>("blockedattachments")?.Contains(";js") ?? false;
 
         public void AddRestriction()
         {
-            var blockedAtt = settings.GetAttributeValue<string>("blockedattachments");
+            var blockedAtt = settings.GetAttributeValue<string>("blockedattachments") ?? "";
             var list = blockedAtt.Split(';').ToList();
             list.Add("js");
             list.Sort();
@@ -33,7 +33,7 @@ namespace MscrmTools.PortalRecordsMover.AppCode
 
         public void RemoveRestriction()
         {
-            var blockedAtt = settings.GetAttributeValue<string>("blockedattachments");
+            var blockedAtt = settings.GetAttributeValue<string>("blockedattachments") ?? "";
             var list = blockedAtt.Split(';').ToList();
             list.Remove("js");
             list.Sort();
