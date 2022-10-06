@@ -12,9 +12,8 @@
     <description>Export/Import Dynamics 365 portal records</description>
     <summary>Export/Import Dynamics 365 portal records</summary>
     <releaseNotes>
-      Added Modified on and Modified by columns to all return records
-      Added count of selected items
-      Added opening of individual records in Portal Management application (requires latest version of XrmToolBox)
+      Fixed issue with JS restriction check (#58)
+      Added save of export folder in settings file (#56)
     </releaseNotes>
     <tags>XrmToolBox Plugin PortalRecordsMover</tags>
     <dependencies>

@@ -207,6 +207,7 @@ namespace MscrmTools.PortalRecordsMover
                     cbZipFolderStructure.Checked = settings.ZipFolderStructure;
                     cbRemoveFormattedValues.Checked = settings.RemoveFormattedValues;
                     chkDisplayEmptyEntities.Checked = settings.ShowEntitiesWithNoRecords;
+                    txtExportFolder.Text = settings.ExportFolderTarget;
                 }
                 catch (Exception error)
                 {
@@ -782,14 +783,20 @@ Are you sure you want to continue?", @"Warning", MessageBoxButtons.YesNo,
         {
             if (settings.ExportInFolderStructure)
             {
-                var fbd = new FolderBrowserDialog
+                if (string.IsNullOrEmpty(settings.ExportFolderTarget))
                 {
-                    Description = @"Folder where to save exported records"
-                };
-                if (fbd.ShowDialog(this) != DialogResult.OK) return;
+                    var fbd = new FolderBrowserDialog
+                    {
+                        Description = @"Folder where to save exported records"
+                    };
+                    if (fbd.ShowDialog(this) != DialogResult.OK) return;
+
+                    settings.ExportFolderTarget = fbd.SelectedPath;
+                    txtExportFolder.Text = settings.ExportFolderTarget;
+                }
 
                 var timestampExport = $"Export_{DateTime.Now:yyyyMMdd_hhmmss}";
-                var rootPath = Path.Combine(fbd.SelectedPath, timestampExport);
+                var rootPath = Path.Combine(settings.ExportFolderTarget, timestampExport);
                 var entities = list.Entities.GroupBy(ent => ent.LogicalName);
                 foreach (var entity in entities)
                 {
@@ -816,7 +823,7 @@ Are you sure you want to continue?", @"Warning", MessageBoxButtons.YesNo,
 
                 if (settings.ZipFolderStructure)
                 {
-                    var filename = Path.Combine(fbd.SelectedPath, $"{timestampExport}.zip");
+                    var filename = Path.Combine(settings.ExportFolderTarget, $"{timestampExport}.zip");
                     ZipFile.CreateFromDirectory(rootPath, filename);
                     Directory.Delete(rootPath, true);
 
@@ -1169,5 +1176,17 @@ Please review the logs", @"Information", MessageBoxButtons.OK, MessageBoxIcon.Wa
         }
 
         #endregion Methods
+
+        private void btnBrowsFolder_Click(object sender, EventArgs e)
+        {
+            var fbd = new FolderBrowserDialog
+            {
+                Description = @"Folder where to save exported records"
+            };
+            if (fbd.ShowDialog(this) != DialogResult.OK) return;
+
+            settings.ExportFolderTarget = fbd.SelectedPath;
+            txtExportFolder.Text = settings.ExportFolderTarget;
+        }
     }
 }

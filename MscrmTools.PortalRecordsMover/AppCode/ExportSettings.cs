@@ -26,6 +26,7 @@ namespace MscrmTools.PortalRecordsMover.AppCode
             get { return AllEntities.Where(e => SelectedEntities.Contains(e.LogicalName)).ToList(); }
         }
 
+        public string ExportFolderTarget { get; set; }
         public bool ExportInFolderStructure { get; set; }
         public DateTime? ModifyFilter { get; set; }
         public bool RemoveFormattedValues { get; set; }
