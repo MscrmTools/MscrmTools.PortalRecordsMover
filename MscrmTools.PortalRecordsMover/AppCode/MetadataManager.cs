@@ -18,7 +18,9 @@ namespace MscrmTools.PortalRecordsMover.AppCode
                     AllProperties = false,
                     PropertyNames =
                     {
-                        "LogicalName"
+                        "LogicalName",
+                        "PrimaryIdAttribute",
+                        "PrimaryNameAttribute"
                     }
                 }
             };
@@ -46,6 +48,7 @@ namespace MscrmTools.PortalRecordsMover.AppCode
                         "ManyToManyRelationships",
                         "ManyToOneRelationships",
                         "IsIntersect",
+                        "PrimaryIdAttribute",
                         "PrimaryNameAttribute",
                         "Attributes",
                         "ObjectTypeCode"

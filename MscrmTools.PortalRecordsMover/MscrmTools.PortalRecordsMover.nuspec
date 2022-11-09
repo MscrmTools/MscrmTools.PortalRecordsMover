@@ -12,8 +12,7 @@
     <description>Export/Import Dynamics 365 portal records</description>
     <summary>Export/Import Dynamics 365 portal records</summary>
     <releaseNotes>
-      Fixed issue with JS restriction check (#58)
-      Added save of export folder in settings file (#56)
+      Fixed display of many-to-many relationship records
     </releaseNotes>
     <tags>XrmToolBox Plugin PortalRecordsMover</tags>
     <dependencies>

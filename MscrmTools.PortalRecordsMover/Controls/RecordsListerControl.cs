@@ -94,11 +94,12 @@ namespace MscrmTools.PortalRecordsMover.Controls
 
                 if (lvRecords.Columns.Count == 0)
                 {
-                    lvRecords.Columns.Add(new ColumnHeader { Text = emd1.DisplayName?.UserLocalizedLabel?.Label ?? emd1.SchemaName });
+                    lvRecords.Columns.Add(new ColumnHeader { Text = emd1.DisplayName?.UserLocalizedLabel?.Label ?? emd1.SchemaName, Width = 300 });
 
                     lvRecords.Columns.Add(new ColumnHeader
                     {
-                        Text = emd2.DisplayName?.UserLocalizedLabel?.Label ?? emd2.SchemaName
+                        Text = emd2.DisplayName?.UserLocalizedLabel?.Label ?? emd2.SchemaName,
+                        Width = 300
                     });
                 }
 
