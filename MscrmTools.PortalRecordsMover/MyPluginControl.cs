@@ -647,6 +647,7 @@ If you experience issue when transfering some records, especially annotations, p
                 {
                     var validAttributes = emd.Attributes
                         .Where(a => (a.IsValidForCreate ?? false) || (a.IsValidForUpdate ?? false))
+                        .Where(a => !(a is LookupAttributeMetadata lamd && (lamd.Targets.Contains("businessunit") || lamd.Targets.Contains("systemuser"))))
                         .Select(a => a.LogicalName)
                         .ToArray();
 
