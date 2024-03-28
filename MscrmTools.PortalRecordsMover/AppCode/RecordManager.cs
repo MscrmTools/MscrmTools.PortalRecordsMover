@@ -465,6 +465,16 @@ namespace MscrmTools.PortalRecordsMover.AppCode
                 query.Criteria.Filters[0].AddCondition("modifiedon", ConditionOperator.OnOrAfter, settings.ModifyFilter.Value.ToString("yyyy-MM-dd"));
             }
 
+            if (settings.CreateFilterBefore.HasValue)
+            {
+                query.Criteria.Filters[0].AddCondition("createdon", ConditionOperator.OnOrBefore, settings.CreateFilterBefore.Value.ToString("yyyy-MM-dd"));
+            }
+
+            if (settings.ModifyFilterBefore.HasValue)
+            {
+                query.Criteria.Filters[0].AddCondition("modifiedon", ConditionOperator.OnOrBefore, settings.ModifyFilterBefore.Value.ToString("yyyy-MM-dd"));
+            }
+
             if (emd.LogicalName == "adx_webfile")
             {
                 var noteLe = new LinkEntity
@@ -490,6 +500,20 @@ namespace MscrmTools.PortalRecordsMover.AppCode
                 {
                     query.Criteria.Filters[0].AddCondition("note", "modifiedon", ConditionOperator.OnOrAfter,
                         settings.ModifyFilter.Value.ToString("yyyy-MM-dd"));
+                    addLinkEntity = true;
+                }
+
+                if (settings.CreateFilterBefore.HasValue)
+                {
+                    query.Criteria.Filters[0].AddCondition("note", "createdon", ConditionOperator.OnOrBefore,
+                        settings.CreateFilterBefore.Value.ToString("yyyy-MM-dd"));
+                    addLinkEntity = true;
+                }
+
+                if (settings.ModifyFilterBefore.HasValue)
+                {
+                    query.Criteria.Filters[0].AddCondition("note", "modifiedon", ConditionOperator.OnOrBefore,
+                        settings.ModifyFilterBefore.Value.ToString("yyyy-MM-dd"));
                     addLinkEntity = true;
                 }
 

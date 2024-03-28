@@ -34,5 +34,7 @@ namespace MscrmTools.PortalRecordsMover.AppCode
         public bool ShowEntitiesWithNoRecords { get; set; }
         public Guid WebsiteFilter { get; set; }
         public bool ZipFolderStructure { get; set; }
+        public DateTime? CreateFilterBefore { get; internal set; }
+        public DateTime? ModifyFilterBefore { get; internal set; }
     }
 }

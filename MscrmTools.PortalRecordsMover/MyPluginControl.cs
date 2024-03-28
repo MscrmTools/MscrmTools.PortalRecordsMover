@@ -611,6 +611,8 @@ If you experience issue when transfering some records, especially annotations, p
         {
             settings.CreateFilter = docCreateFilter.IsEnabled ? docCreateFilter.SelectedDate : (DateTime?)null;
             settings.ModifyFilter = docModifyFilter.IsEnabled ? docModifyFilter.SelectedDate : (DateTime?)null;
+            settings.CreateFilterBefore = docCreateFilterBefore.IsEnabled ? docCreateFilterBefore.SelectedDate : (DateTime?)null;
+            settings.ModifyFilterBefore = docModifyFilterBefore.IsEnabled ? docModifyFilterBefore.SelectedDate : (DateTime?)null;
             settings.WebsiteFilter = wpcWebsiteFilter.IsEnabled ? wpcWebsiteFilter.SelectedWebSiteId : Guid.Empty;
             settings.SelectedEntities = ecpEntities.SelectedMetadatas.Select(emd => emd.LogicalName).ToList();
             settings.AllEntities = ecpEntities.Metadata;
