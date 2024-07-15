@@ -20,6 +20,8 @@ namespace MscrmTools.PortalRecordsMover.AppCode
 
         public DateTime? CreateFilter { get; set; }
 
+        public DateTime? CreateFilterBefore { get; set; }
+
         [XmlIgnore]
         public List<EntityMetadata> Entities
         {
@@ -29,12 +31,11 @@ namespace MscrmTools.PortalRecordsMover.AppCode
         public string ExportFolderTarget { get; set; }
         public bool ExportInFolderStructure { get; set; }
         public DateTime? ModifyFilter { get; set; }
+        public DateTime? ModifyFilterBefore { get; set; }
         public bool RemoveFormattedValues { get; set; }
         public List<string> SelectedEntities { get; set; }
         public bool ShowEntitiesWithNoRecords { get; set; }
         public Guid WebsiteFilter { get; set; }
         public bool ZipFolderStructure { get; set; }
-        public DateTime? CreateFilterBefore { get; internal set; }
-        public DateTime? ModifyFilterBefore { get; internal set; }
     }
 }
