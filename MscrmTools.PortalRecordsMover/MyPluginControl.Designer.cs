@@ -48,6 +48,9 @@ namespace MscrmTools.PortalRecordsMover
             this.saveSettingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.scRight = new System.Windows.Forms.SplitContainer();
             this.gbOptions = new System.Windows.Forms.GroupBox();
+            this.wpcWebsiteFilter = new MscrmTools.PortalRecordsMover.Controls.WebsitePickerControl();
+            this.docModifyFilterBefore = new MscrmTools.PortalRecordsMover.Controls.DateOptionControl();
+            this.docCreateFilterBefore = new MscrmTools.PortalRecordsMover.Controls.DateOptionControl();
             this.btnBrowsFolder = new System.Windows.Forms.Button();
             this.txtExportFolder = new System.Windows.Forms.TextBox();
             this.lblExportFolder = new System.Windows.Forms.Label();
@@ -89,9 +92,6 @@ namespace MscrmTools.PortalRecordsMover
             this.lblImportFileLabel = new System.Windows.Forms.Label();
             this.pnlImportHeader = new System.Windows.Forms.Panel();
             this.lblImportHeader = new System.Windows.Forms.Label();
-            this.docCreateFilterBefore = new MscrmTools.PortalRecordsMover.Controls.DateOptionControl();
-            this.docModifyFilterBefore = new MscrmTools.PortalRecordsMover.Controls.DateOptionControl();
-            this.wpcWebsiteFilter = new MscrmTools.PortalRecordsMover.Controls.WebsitePickerControl();
             this.tsMain.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.scRight)).BeginInit();
             this.scRight.Panel1.SuspendLayout();
@@ -115,7 +115,7 @@ namespace MscrmTools.PortalRecordsMover
             this.tsbLoad.Image = ((System.Drawing.Image)(resources.GetObject("tsbLoad.Image")));
             this.tsbLoad.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tsbLoad.Name = "tsbLoad";
-            this.tsbLoad.Size = new System.Drawing.Size(127, 29);
+            this.tsbLoad.Size = new System.Drawing.Size(119, 52);
             this.tsbLoad.Text = "Load items";
             this.tsbLoad.ToolTipText = "Load entities and website from the connected organization.\r\n\r\nThis step is mandat" +
     "ory before executing other actions";
@@ -124,7 +124,7 @@ namespace MscrmTools.PortalRecordsMover
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(6, 34);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(6, 57);
             // 
             // tsbRetrieveRecords
             // 
@@ -132,7 +132,7 @@ namespace MscrmTools.PortalRecordsMover
             this.tsbRetrieveRecords.Image = ((System.Drawing.Image)(resources.GetObject("tsbRetrieveRecords.Image")));
             this.tsbRetrieveRecords.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tsbRetrieveRecords.Name = "tsbRetrieveRecords";
-            this.tsbRetrieveRecords.Size = new System.Drawing.Size(166, 29);
+            this.tsbRetrieveRecords.Size = new System.Drawing.Size(158, 52);
             this.tsbRetrieveRecords.Text = "Retrieve records";
             this.tsbRetrieveRecords.ToolTipText = "Retrieve records based on options defined";
             this.tsbRetrieveRecords.Click += new System.EventHandler(this.tsbRetrieveRecords_Click);
@@ -140,7 +140,7 @@ namespace MscrmTools.PortalRecordsMover
             // toolStripSeparator2
             // 
             this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(6, 34);
+            this.toolStripSeparator2.Size = new System.Drawing.Size(6, 57);
             // 
             // tsbExport
             // 
@@ -148,7 +148,7 @@ namespace MscrmTools.PortalRecordsMover
             this.tsbExport.Image = ((System.Drawing.Image)(resources.GetObject("tsbExport.Image")));
             this.tsbExport.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tsbExport.Name = "tsbExport";
-            this.tsbExport.Size = new System.Drawing.Size(155, 29);
+            this.tsbExport.Size = new System.Drawing.Size(147, 52);
             this.tsbExport.Text = "Export records";
             this.tsbExport.ToolTipText = "Export records in a file";
             this.tsbExport.Click += new System.EventHandler(this.tsbExport_Click);
@@ -158,14 +158,13 @@ namespace MscrmTools.PortalRecordsMover
             this.tsbImportRecords.Image = ((System.Drawing.Image)(resources.GetObject("tsbImportRecords.Image")));
             this.tsbImportRecords.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tsbImportRecords.Name = "tsbImportRecords";
-            this.tsbImportRecords.Size = new System.Drawing.Size(159, 29);
+            this.tsbImportRecords.Size = new System.Drawing.Size(151, 52);
             this.tsbImportRecords.Text = "Import records";
             this.tsbImportRecords.ToolTipText = "Import records from a file";
             this.tsbImportRecords.Click += new System.EventHandler(this.tsbImportRecords_Click);
             // 
             // tsMain
             // 
-            this.tsMain.ImageScalingSize = new System.Drawing.Size(24, 24);
             this.tsMain.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.tsbClose,
             this.toolStripSeparator3,
@@ -181,7 +180,7 @@ namespace MscrmTools.PortalRecordsMover
             this.tsMain.Location = new System.Drawing.Point(0, 0);
             this.tsMain.Name = "tsMain";
             this.tsMain.Padding = new System.Windows.Forms.Padding(0, 0, 3, 0);
-            this.tsMain.Size = new System.Drawing.Size(1593, 34);
+            this.tsMain.Size = new System.Drawing.Size(2390, 57);
             this.tsMain.TabIndex = 3;
             this.tsMain.Text = "tsMain";
             // 
@@ -191,14 +190,14 @@ namespace MscrmTools.PortalRecordsMover
             this.tsbClose.Image = ((System.Drawing.Image)(resources.GetObject("tsbClose.Image")));
             this.tsbClose.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tsbClose.Name = "tsbClose";
-            this.tsbClose.Size = new System.Drawing.Size(34, 29);
+            this.tsbClose.Size = new System.Drawing.Size(34, 52);
             this.tsbClose.Text = "Close";
             this.tsbClose.Click += new System.EventHandler(this.tsbClose_Click);
             // 
             // toolStripSeparator3
             // 
             this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(6, 34);
+            this.toolStripSeparator3.Size = new System.Drawing.Size(6, 57);
             // 
             // tssbTransferData
             // 
@@ -208,7 +207,7 @@ namespace MscrmTools.PortalRecordsMover
             this.tssbTransferData.Image = global::MscrmTools.PortalRecordsMover.Properties.Resources.database;
             this.tssbTransferData.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tssbTransferData.Name = "tssbTransferData";
-            this.tssbTransferData.Size = new System.Drawing.Size(182, 29);
+            this.tssbTransferData.Size = new System.Drawing.Size(174, 52);
             this.tssbTransferData.Text = "Transfer records";
             this.tssbTransferData.ToolTipText = "Transfer records between the connected organization and another organization";
             this.tssbTransferData.ButtonClick += new System.EventHandler(this.tsbTransferData_Click);
@@ -224,7 +223,7 @@ namespace MscrmTools.PortalRecordsMover
             // toolStripSeparator4
             // 
             this.toolStripSeparator4.Name = "toolStripSeparator4";
-            this.toolStripSeparator4.Size = new System.Drawing.Size(6, 34);
+            this.toolStripSeparator4.Size = new System.Drawing.Size(6, 57);
             // 
             // tsddSettings
             // 
@@ -235,7 +234,7 @@ namespace MscrmTools.PortalRecordsMover
             this.tsddSettings.Image = ((System.Drawing.Image)(resources.GetObject("tsddSettings.Image")));
             this.tsddSettings.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tsddSettings.Name = "tsddSettings";
-            this.tsddSettings.Size = new System.Drawing.Size(118, 29);
+            this.tsddSettings.Size = new System.Drawing.Size(110, 52);
             this.tsddSettings.Text = "Settings";
             // 
             // loadSettingsToolStripMenuItem
@@ -268,8 +267,8 @@ namespace MscrmTools.PortalRecordsMover
             // 
             this.scRight.Panel2.Controls.Add(this.tabCtrl);
             this.scRight.Panel2.Controls.Add(this.pnlTabSelection);
-            this.scRight.Size = new System.Drawing.Size(1329, 1258);
-            this.scRight.SplitterDistance = 554;
+            this.scRight.Size = new System.Drawing.Size(1999, 1853);
+            this.scRight.SplitterDistance = 816;
             this.scRight.SplitterWidth = 10;
             this.scRight.TabIndex = 0;
             // 
@@ -293,15 +292,52 @@ namespace MscrmTools.PortalRecordsMover
             this.gbOptions.Margin = new System.Windows.Forms.Padding(6, 8, 6, 8);
             this.gbOptions.Name = "gbOptions";
             this.gbOptions.Padding = new System.Windows.Forms.Padding(6, 8, 6, 8);
-            this.gbOptions.Size = new System.Drawing.Size(1329, 554);
+            this.gbOptions.Size = new System.Drawing.Size(1999, 816);
             this.gbOptions.TabIndex = 0;
             this.gbOptions.TabStop = false;
             this.gbOptions.Text = "Options";
             // 
+            // wpcWebsiteFilter
+            // 
+            this.wpcWebsiteFilter.Dock = System.Windows.Forms.DockStyle.Top;
+            this.wpcWebsiteFilter.IsEnabled = false;
+            this.wpcWebsiteFilter.Location = new System.Drawing.Point(6, 235);
+            this.wpcWebsiteFilter.Margin = new System.Windows.Forms.Padding(6, 8, 6, 8);
+            this.wpcWebsiteFilter.Name = "wpcWebsiteFilter";
+            this.wpcWebsiteFilter.SelectedWebSiteId = new System.Guid("00000000-0000-0000-0000-000000000000");
+            this.wpcWebsiteFilter.Size = new System.Drawing.Size(1987, 52);
+            this.wpcWebsiteFilter.TabIndex = 14;
+            // 
+            // docModifyFilterBefore
+            // 
+            this.docModifyFilterBefore.Attribute = null;
+            this.docModifyFilterBefore.Dock = System.Windows.Forms.DockStyle.Top;
+            this.docModifyFilterBefore.IsEnabled = false;
+            this.docModifyFilterBefore.Label = "Get records modified on or before";
+            this.docModifyFilterBefore.Location = new System.Drawing.Point(6, 183);
+            this.docModifyFilterBefore.Margin = new System.Windows.Forms.Padding(6, 8, 6, 8);
+            this.docModifyFilterBefore.Name = "docModifyFilterBefore";
+            this.docModifyFilterBefore.SelectedDate = new System.DateTime(2017, 6, 13, 13, 59, 42, 271);
+            this.docModifyFilterBefore.Size = new System.Drawing.Size(1987, 52);
+            this.docModifyFilterBefore.TabIndex = 13;
+            // 
+            // docCreateFilterBefore
+            // 
+            this.docCreateFilterBefore.Attribute = null;
+            this.docCreateFilterBefore.Dock = System.Windows.Forms.DockStyle.Top;
+            this.docCreateFilterBefore.IsEnabled = false;
+            this.docCreateFilterBefore.Label = "Get records created on or before";
+            this.docCreateFilterBefore.Location = new System.Drawing.Point(6, 131);
+            this.docCreateFilterBefore.Margin = new System.Windows.Forms.Padding(6, 8, 6, 8);
+            this.docCreateFilterBefore.Name = "docCreateFilterBefore";
+            this.docCreateFilterBefore.SelectedDate = new System.DateTime(2017, 6, 13, 13, 59, 42, 288);
+            this.docCreateFilterBefore.Size = new System.Drawing.Size(1987, 52);
+            this.docCreateFilterBefore.TabIndex = 12;
+            // 
             // btnBrowsFolder
             // 
             this.btnBrowsFolder.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnBrowsFolder.Location = new System.Drawing.Point(1269, 444);
+            this.btnBrowsFolder.Location = new System.Drawing.Point(1939, 444);
             this.btnBrowsFolder.Name = "btnBrowsFolder";
             this.btnBrowsFolder.Size = new System.Drawing.Size(51, 36);
             this.btnBrowsFolder.TabIndex = 10;
@@ -316,7 +352,7 @@ namespace MscrmTools.PortalRecordsMover
             this.txtExportFolder.Location = new System.Drawing.Point(315, 444);
             this.txtExportFolder.Name = "txtExportFolder";
             this.txtExportFolder.ReadOnly = true;
-            this.txtExportFolder.Size = new System.Drawing.Size(948, 26);
+            this.txtExportFolder.Size = new System.Drawing.Size(1618, 26);
             this.txtExportFolder.TabIndex = 9;
             // 
             // lblExportFolder
@@ -390,7 +426,7 @@ namespace MscrmTools.PortalRecordsMover
             this.docModifyFilter.Margin = new System.Windows.Forms.Padding(6, 8, 6, 8);
             this.docModifyFilter.Name = "docModifyFilter";
             this.docModifyFilter.SelectedDate = new System.DateTime(2017, 6, 13, 13, 59, 42, 271);
-            this.docModifyFilter.Size = new System.Drawing.Size(1317, 52);
+            this.docModifyFilter.Size = new System.Drawing.Size(1987, 52);
             this.docModifyFilter.TabIndex = 1;
             // 
             // docCreateFilter
@@ -403,7 +439,7 @@ namespace MscrmTools.PortalRecordsMover
             this.docCreateFilter.Margin = new System.Windows.Forms.Padding(6, 8, 6, 8);
             this.docCreateFilter.Name = "docCreateFilter";
             this.docCreateFilter.SelectedDate = new System.DateTime(2017, 6, 13, 13, 59, 42, 288);
-            this.docCreateFilter.Size = new System.Drawing.Size(1317, 52);
+            this.docCreateFilter.Size = new System.Drawing.Size(1987, 52);
             this.docCreateFilter.TabIndex = 0;
             // 
             // tabCtrl
@@ -413,7 +449,7 @@ namespace MscrmTools.PortalRecordsMover
             this.tabCtrl.Margin = new System.Windows.Forms.Padding(6, 8, 6, 8);
             this.tabCtrl.Name = "tabCtrl";
             this.tabCtrl.SelectedIndex = 0;
-            this.tabCtrl.Size = new System.Drawing.Size(1329, 652);
+            this.tabCtrl.Size = new System.Drawing.Size(1999, 985);
             this.tabCtrl.TabIndex = 5;
             this.tabCtrl.SelectedIndexChanged += new System.EventHandler(this.tabCtrl_SelectedIndexChanged);
             // 
@@ -424,7 +460,7 @@ namespace MscrmTools.PortalRecordsMover
             this.pnlTabSelection.Location = new System.Drawing.Point(0, 0);
             this.pnlTabSelection.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.pnlTabSelection.Name = "pnlTabSelection";
-            this.pnlTabSelection.Size = new System.Drawing.Size(1329, 42);
+            this.pnlTabSelection.Size = new System.Drawing.Size(1999, 42);
             this.pnlTabSelection.TabIndex = 4;
             this.pnlTabSelection.Visible = false;
             // 
@@ -433,7 +469,7 @@ namespace MscrmTools.PortalRecordsMover
             this.cbbTabSelection.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.cbbTabSelection.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cbbTabSelection.FormattingEnabled = true;
-            this.cbbTabSelection.Location = new System.Drawing.Point(915, 5);
+            this.cbbTabSelection.Location = new System.Drawing.Point(1585, 5);
             this.cbbTabSelection.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.cbbTabSelection.Name = "cbbTabSelection";
             this.cbbTabSelection.Size = new System.Drawing.Size(408, 28);
@@ -443,7 +479,7 @@ namespace MscrmTools.PortalRecordsMover
             // scMain
             // 
             this.scMain.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.scMain.Location = new System.Drawing.Point(0, 34);
+            this.scMain.Location = new System.Drawing.Point(0, 86);
             this.scMain.Margin = new System.Windows.Forms.Padding(6, 8, 6, 8);
             this.scMain.Name = "scMain";
             // 
@@ -454,8 +490,8 @@ namespace MscrmTools.PortalRecordsMover
             // scMain.Panel2
             // 
             this.scMain.Panel2.Controls.Add(this.scRight);
-            this.scMain.Size = new System.Drawing.Size(1593, 1258);
-            this.scMain.SplitterDistance = 255;
+            this.scMain.Size = new System.Drawing.Size(2390, 1853);
+            this.scMain.SplitterDistance = 382;
             this.scMain.SplitterWidth = 9;
             this.scMain.TabIndex = 4;
             // 
@@ -466,7 +502,7 @@ namespace MscrmTools.PortalRecordsMover
             this.ecpEntities.Margin = new System.Windows.Forms.Padding(6, 8, 6, 8);
             this.ecpEntities.Name = "ecpEntities";
             this.ecpEntities.Service = null;
-            this.ecpEntities.Size = new System.Drawing.Size(255, 1258);
+            this.ecpEntities.Size = new System.Drawing.Size(382, 1853);
             this.ecpEntities.TabIndex = 0;
             // 
             // pnlImport
@@ -749,43 +785,6 @@ namespace MscrmTools.PortalRecordsMover
             this.lblImportHeader.Size = new System.Drawing.Size(313, 45);
             this.lblImportHeader.TabIndex = 0;
             this.lblImportHeader.Text = "Portal Records Import";
-            // 
-            // docCreateFilterBefore
-            // 
-            this.docCreateFilterBefore.Attribute = null;
-            this.docCreateFilterBefore.Dock = System.Windows.Forms.DockStyle.Top;
-            this.docCreateFilterBefore.IsEnabled = false;
-            this.docCreateFilterBefore.Label = "Get records created on or before";
-            this.docCreateFilterBefore.Location = new System.Drawing.Point(6, 131);
-            this.docCreateFilterBefore.Margin = new System.Windows.Forms.Padding(6, 8, 6, 8);
-            this.docCreateFilterBefore.Name = "docCreateFilterBefore";
-            this.docCreateFilterBefore.SelectedDate = new System.DateTime(2017, 6, 13, 13, 59, 42, 288);
-            this.docCreateFilterBefore.Size = new System.Drawing.Size(1317, 52);
-            this.docCreateFilterBefore.TabIndex = 12;
-            // 
-            // docModifyFilterBefore
-            // 
-            this.docModifyFilterBefore.Attribute = null;
-            this.docModifyFilterBefore.Dock = System.Windows.Forms.DockStyle.Top;
-            this.docModifyFilterBefore.IsEnabled = false;
-            this.docModifyFilterBefore.Label = "Get records modified on or before";
-            this.docModifyFilterBefore.Location = new System.Drawing.Point(6, 183);
-            this.docModifyFilterBefore.Margin = new System.Windows.Forms.Padding(6, 8, 6, 8);
-            this.docModifyFilterBefore.Name = "docModifyFilterBefore";
-            this.docModifyFilterBefore.SelectedDate = new System.DateTime(2017, 6, 13, 13, 59, 42, 271);
-            this.docModifyFilterBefore.Size = new System.Drawing.Size(1317, 52);
-            this.docModifyFilterBefore.TabIndex = 13;
-            // 
-            // wpcWebsiteFilter
-            // 
-            this.wpcWebsiteFilter.Dock = System.Windows.Forms.DockStyle.Top;
-            this.wpcWebsiteFilter.IsEnabled = false;
-            this.wpcWebsiteFilter.Location = new System.Drawing.Point(6, 235);
-            this.wpcWebsiteFilter.Margin = new System.Windows.Forms.Padding(6, 8, 6, 8);
-            this.wpcWebsiteFilter.Name = "wpcWebsiteFilter";
-            this.wpcWebsiteFilter.SelectedWebSiteId = new System.Guid("00000000-0000-0000-0000-000000000000");
-            this.wpcWebsiteFilter.Size = new System.Drawing.Size(1317, 52);
-            this.wpcWebsiteFilter.TabIndex = 14;
             // 
             // MyPluginControl
             // 
